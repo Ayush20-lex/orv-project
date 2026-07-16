@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toPng } from "html-to-image";
-import { Download, Sparkles, ChevronRight } from "lucide-react";
+import { Download, ChevronRight } from "lucide-react";
 import { COLORS, uiFont, displayFont } from "../../components/home/shared";
 import StatCard from "../../components/builder/stat-card";
 
@@ -100,10 +100,10 @@ export default function BuilderPage() {
 
   const generateStats = () => {
     const dominantTone = Object.keys(scores).filter(k => ["icy", "blood", "gold"].includes(k)).reduce((a, b) => scores[a] > scores[b] ? a : b);
-    
+
     // Slight randomization for flavor
     const randomItem = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
-    
+
     setResult({
       name: name,
       tone: dominantTone,
@@ -193,7 +193,7 @@ export default function BuilderPage() {
               <h3 style={{ ...displayFont, color: "#eef2fb" }} className="text-xl font-bold mb-8 leading-relaxed">
                 {QUIZ_QUESTIONS[step - 1].question}
               </h3>
-              
+
               <div className="space-y-4">
                 {QUIZ_QUESTIONS[step - 1].answers.map((answer, idx) => (
                   <button
@@ -217,7 +217,7 @@ export default function BuilderPage() {
             >
               {/* @ts-ignore - JS Component used in TS file */}
               <StatCard data={result} ref={cardRef} />
-              
+
               <button
                 onClick={downloadImage}
                 className="mt-8 px-8 py-4 rounded-lg flex items-center gap-3 transition-all hover:scale-105"
@@ -228,8 +228,8 @@ export default function BuilderPage() {
                   Save Record
                 </span>
               </button>
-              
-              <button 
+
+              <button
                 onClick={() => { setStep(0); setName(""); setScores({ icy: 0, blood: 0, gold: 0, str: 10, agi: 10, end: 10, mana: 10 }); }}
                 className="mt-4 text-[#8a93a8] hover:text-white text-xs uppercase tracking-widest transition-colors font-medium"
               >
