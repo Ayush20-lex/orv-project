@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
@@ -147,6 +148,11 @@ const CHARACTERS = [
 
 export default function CharactersPage() {
   const [selectedChar, setSelectedChar] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const getToneColor = (tone: string) => {
     if (tone === "blood") return COLORS.blood;
@@ -202,91 +208,95 @@ export default function CharactersPage() {
         </div>
       </div>
 
-      <AnimatePresence>
-        {selectedChar && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedChar(null)}
-              className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-2xl"
-            >
-              <div
-                className="mx-4 overflow-y-auto max-h-[90vh] rounded-2xl relative"
-                style={{ background: COLORS.abyss, border: `1px solid ${getToneColor(selectedChar.tone)}55`, boxShadow: `0 20px 40px -10px rgba(0,0,0,0.8)` }}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {selectedChar && (
+            <>
+              <motion.div
+                key="backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedChar(null)}
+                className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm"
+              />
+              <motion.div
+                key="modal"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-2xl"
               >
-                <button
-                  onClick={() => setSelectedChar(null)}
-                  className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+                <div
+                  className="mx-4 overflow-y-auto max-h-[90vh] rounded-2xl relative"
+                  style={{ background: COLORS.abyss, border: `1px solid ${getToneColor(selectedChar.tone)}55`, boxShadow: `0 20px 40px -10px rgba(0,0,0,0.8)` }}
                 >
-                  <X size={20} />
-                </button>
+                  <button
+                    onClick={() => setSelectedChar(null)}
+                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+                  >
+                    <X size={20} />
+                  </button>
 
-                <div className="flex flex-col md:flex-row">
-                  <div className="w-full md:w-2/5 h-48 sm:h-64 md:h-auto relative bg-black/50 shrink-0">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${selectedChar.image})` }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/80 to-transparent mix-blend-overlay" />
-                  </div>
-                  <div className="w-full md:w-3/5 p-6 md:p-8">
-                    <p style={{ ...uiFont, color: getToneColor(selectedChar.tone) }} className="text-[10px] uppercase font-bold tracking-widest mb-2">
-                      [ {selectedChar.title} ]
-                    </p>
-                    <h2 style={{ ...displayFont, color: "#eef2fb" }} className="text-3xl font-black mb-1">
-                      {selectedChar.name}
-                    </h2>
-                    <p style={{ ...uiFont, color: COLORS.dim }} className="text-xs mb-6 font-medium italic">
-                      Modifier: {selectedChar.modifier}
-                    </p>
-
-                    <div className="space-y-4 mb-6">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Sponsor</p>
-                          <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium">{selectedChar.sponsor}</p>
-                        </div>
-                        <div>
-                          <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Attribute</p>
-                          <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium">{selectedChar.personalAttribute}</p>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Exclusive Skills</p>
-                        <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium leading-relaxed">{selectedChar.exclusiveSkills}</p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 pt-3 border-t border-white/5">
-                        <div>
-                          <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Stigma</p>
-                          <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium">{selectedChar.stigma}</p>
-                        </div>
-                        <div>
-                          <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Overall Stats</p>
-                          <p style={{ ...uiFont, color: getToneColor(selectedChar.tone) }} className="text-xs font-bold font-mono tracking-tight">{selectedChar.stats}</p>
-                        </div>
-                      </div>
+                  <div className="flex flex-col md:flex-row">
+                    <div className="w-full md:w-2/5 h-48 sm:h-64 md:h-auto relative bg-black/50 shrink-0">
+                      <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${selectedChar.image})` }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/80 to-transparent mix-blend-overlay" />
                     </div>
+                    <div className="w-full md:w-3/5 p-6 md:p-8">
+                      <p style={{ ...uiFont, color: getToneColor(selectedChar.tone) }} className="text-[10px] uppercase font-bold tracking-widest mb-2">
+                        [ {selectedChar.title} ]
+                      </p>
+                      <h2 style={{ ...displayFont, color: "#eef2fb" }} className="text-3xl font-black mb-1">
+                        {selectedChar.name}
+                      </h2>
+                      <p style={{ ...uiFont, color: COLORS.dim }} className="text-xs mb-6 font-medium italic">
+                        Modifier: {selectedChar.modifier}
+                      </p>
 
-                    <p style={{ ...uiFont, color: "#8a93a8" }} className="text-sm leading-[1.8]">
-                      {selectedChar.description}
-                    </p>
+                      <div className="space-y-4 mb-6">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Sponsor</p>
+                            <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium">{selectedChar.sponsor}</p>
+                          </div>
+                          <div>
+                            <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Attribute</p>
+                            <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium">{selectedChar.personalAttribute}</p>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Exclusive Skills</p>
+                          <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium leading-relaxed">{selectedChar.exclusiveSkills}</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 pt-3 border-t border-white/5">
+                          <div>
+                            <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Stigma</p>
+                            <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium">{selectedChar.stigma}</p>
+                          </div>
+                          <div>
+                            <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Overall Stats</p>
+                            <p style={{ ...uiFont, color: getToneColor(selectedChar.tone) }} className="text-xs font-bold font-mono tracking-tight">{selectedChar.stats}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <p style={{ ...uiFont, color: "#8a93a8" }} className="text-sm leading-[1.8]">
+                        {selectedChar.description}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      , document.body)}
     </div>
   );
 }
