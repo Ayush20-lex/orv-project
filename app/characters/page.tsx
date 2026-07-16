@@ -219,7 +219,7 @@ export default function CharactersPage() {
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-2xl"
             >
               <div
-                className="mx-4 overflow-hidden rounded-2xl relative"
+                className="mx-4 overflow-y-auto max-h-[90vh] rounded-2xl relative"
                 style={{ background: COLORS.abyss, border: `1px solid ${getToneColor(selectedChar.tone)}55`, boxShadow: `0 20px 40px -10px rgba(0,0,0,0.8)` }}
               >
                 <button
@@ -230,14 +230,14 @@ export default function CharactersPage() {
                 </button>
 
                 <div className="flex flex-col md:flex-row">
-                  <div className="w-full md:w-2/5 h-64 md:h-auto relative bg-black/50">
+                  <div className="w-full md:w-2/5 h-48 sm:h-64 md:h-auto relative bg-black/50 shrink-0">
                     <div
                       className="absolute inset-0 bg-cover bg-center"
                       style={{ backgroundImage: `url(${selectedChar.image})` }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/80 to-transparent mix-blend-overlay" />
                   </div>
-                  <div className="w-full md:w-3/5 p-8">
+                  <div className="w-full md:w-3/5 p-6 md:p-8">
                     <p style={{ ...uiFont, color: getToneColor(selectedChar.tone) }} className="text-[10px] uppercase font-bold tracking-widest mb-2">
                       [ {selectedChar.title} ]
                     </p>
