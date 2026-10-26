@@ -18,7 +18,6 @@
     <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.7.3-3178C6?style=flat&logo=typescript&logoColor=white" alt="TypeScript 5.7" /></a>
     <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind_CSS-v4-06b6d4?style=flat&logo=tailwind-css&logoColor=white" alt="Tailwind CSS 4" /></a>
     <a href="https://www.framer.com/motion/"><img src="https://img.shields.io/badge/Framer_Motion-12-black?style=flat&logo=framer&logoColor=0055FF" alt="Framer Motion 12" /></a>
-    <img src="https://img.shields.io/badge/Status-Production_Ready-10b981?style=flat" alt="Production Ready" />
   </p>
 
   <p align="center">
@@ -43,7 +42,7 @@ Welcome to the **Star Stream**.
 When the free service of the world ended on Seoul Subway Line 3, humanity was thrust into the brutal survival scenarios orchestrated by transcendent entities. Built with modern web architecture and styled after the iconic glowing cyan **System Windows**, this project brings the intricate universe of *Omniscient Reader's Viewpoint* to life:
 
 - **Holographic Aesthetics:** Sleek midnight glassmorphism, responsive starfields, and cosmic typography tailored for desktop and mobile reading.
-- **Lore-Accurate Systems:** Meticulously cross-referenced character stats, stigmas, exclusive skills, and constellation modifiers matching canonical webnovel lore.
+- **Lore Reference Data:** Curated character stats, stigmas, exclusive skills, and constellation modifiers cross-referenced against webnovel chapters, acknowledging that translation nuances and verification status may vary.
 - **Interactive Exploration:** A real-time constellation relationship graph, dynamic quote filter gallery, and an attribute builder with downloadable character cards.
 
 ---
@@ -60,7 +59,7 @@ When the free service of the world ended on Seoul Subway Line 3, humanity was th
     </td>
     <td width="50%" valign="top">
       <h3>🔭 The Night Sky (Constellation Observatory)</h3>
-      <p>An interactive celestial atlas mapping verified connections between Incarnations, Constellations, and Ancient Entities. Explore nebulas, filter by alignment (Sponsorships, Kim Dokja's Company, Watchers & Rivals), search with instant keyboard shortcuts (<code>/</code>), and activate <strong>Spoiler Safe Mode</strong>.</p>
+      <p>An interactive celestial atlas mapping documented relationships between Incarnations, Constellations, and Ancient Entities across the scenarios (verification status varies by node and edge). Explore nebulas, filter by alignment (Sponsorships, Kim Dokja's Company, Watchers & Rivals), search with instant keyboard shortcuts (<code>/</code>), and activate <strong>Spoiler Safe Mode</strong>.</p>
       <p><em>Route: <code>/constellations</code></em></p>
     </td>
   </tr>
@@ -101,7 +100,7 @@ Star Stream is engineered with a modern, high-performance web stack designed for
 
 | Layer | Technologies | Purpose |
 | :--- | :--- | :--- |
-| **Framework** | [Next.js 16.2.6](https://nextjs.org/) (App Router, Turbopack) | Static prerendering of all 10 application routes, dynamic metadata, and sitemap generation. |
+| **Framework** | [Next.js 16.2.6](https://nextjs.org/) (App Router, Turbopack) | Static prerendering of the 5 application routes, alongside dynamic metadata and sitemap generation. |
 | **Core UI** | [React 19](https://react.dev/) & [TypeScript 5.7.3](https://www.typescriptlang.org/) | Strict type safety across lore registries, constellation graphs, and scoring engine. |
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) & Vanilla CSS | Custom cosmic dark theme, cyan-blue glows, glassmorphism tokens, and responsive layouts. |
 | **Animations** | [Framer Motion 12.42](https://www.framer.com/motion/) | Smooth holographic glitch transitions, layout morphing, modal dialogs, and drawer reveals. |
@@ -125,30 +124,23 @@ cd orv-project
 
 ### 2. Install dependencies
 ```bash
-# Using npm
 npm install
-
-# Or using bun
-bun install
 ```
+> The project maintains a canonical `package-lock.json`. Use `npm install` to preserve existing lockfile conventions without generating alternative lockfiles.
 
 ### 3. Start the development server
 ```bash
-# Using npm
 npm run dev
-
-# Or using bun
-bun run dev
 ```
 
 ### 4. Open the application
 Navigate to [http://localhost:3000](http://localhost:3000) in your browser. The Star Stream will initialize automatically.
 
 ### Available Scripts
-- `npm run dev` / `bun run dev` — Launch local development server with Turbopack.
-- `npm run build` / `bun run build` — Compile optimized production bundle (prerenders all 10 static pages).
-- `npm run start` / `bun run start` — Run production server locally.
-- `npm run lint` / `bun run lint` — Execute ESLint 9 checks across all source files.
+- `npm run dev` — Launch local development server with Turbopack.
+- `npm run build` — Compile optimized production bundle (statically prerenders the 5 application routes).
+- `npm run start` — Run production server locally.
+- `npm run lint` — Execute ESLint checks across all source files.
 
 ---
 
@@ -198,12 +190,12 @@ Contributions, bug reports, and community expansions are warmly welcomed:
 ---
 
 <a id="disclaimer"></a>
-## ⚖️ Fair Use Disclaimer & Provenance
+## ⚖️ Disclaimer & Artwork Provenance
 
 **Star Stream is a non-commercial, fan-made educational and appreciation project.** It is not affiliated with, endorsed by, or sponsored by sing N song (싱숑), Sleepy-C / REDICE Studio, Blackbox (블랙박스), Munpia, or Naver Webtoon Corp.
 
 - **Intellectual Property:** All story concepts, scenarios, character names, dialogues, and lore belong strictly to sing N song and their respective publishing partners.
-- **Visual Assets Notice:** Character artwork and cover illustrations are presented strictly for educational commentary, archival character cataloging, and non-commercial fan appreciation under fair dealing principles. Formal commercial reuse permissions remain unverified from the rights holders, and no copyright ownership is claimed. No commercial license is granted or implied. For detailed attribution origins, see [`STAR_STREAM_ARTWORK_PROVENANCE_REPORT.md`](docs/archive/phase-reports/STAR_STREAM_ARTWORK_PROVENANCE_REPORT.md).
+- **Visual Assets Notice:** Character artwork and cover illustrations are presented for non-commercial fan appreciation and archival cataloging. Formal third-party reuse permissions remain unverified from the original rights holders; no copyright ownership is claimed, and no commercial license or rights are granted or implied. For detailed attribution origins and source records, see [`STAR_STREAM_ARTWORK_PROVENANCE_REPORT.md`](docs/archive/phase-reports/STAR_STREAM_ARTWORK_PROVENANCE_REPORT.md).
 - **Support the Creators:** Read the official manhwa on [LINE Webtoon](https://www.webtoons.com/) and the official Korean novel serial on [Naver Series](https://series.naver.com/) and [Munpia](https://www.munpia.com/).
 
 ---
