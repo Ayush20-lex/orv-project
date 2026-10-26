@@ -27,7 +27,7 @@ Captured at standard desktop viewport (1440 × 900) across all three concepts:
 
 ![Star Stream Constellation Atlas Concepts Comparison](file:///C:/Users/ayush/.gemini/antigravity-ide/brain/8a317063-de4d-40cf-b0f9-7aa102851981/concepts_comparison_1440x900_1792936992069.png)
 
-> **Interactive Switcher Available:** You can also preview and interact with all three live prototypes and switch between them in real-time at [public/concepts/index.html](file:///c:/Users/ayush/OneDrive/Desktop/orv_project/kim_project/public/concepts/index.html).
+> **Historical Prototype Note:** Exploratory static HTML switcher prototypes previously hosted in `public/concepts/` were archived and eliminated during the repository cleanup pass after the approved 2D interactive canvas design was fully implemented in production under `components/observatory/`.
 
 ---
 
@@ -128,12 +128,12 @@ Whichever concept is chosen, **100% of the verified lore, data modeling, accessi
 
 ## 6. PROTOTYPE FILE INVENTORY
 
-All prototypes have been implemented as standalone, static HTML/SVG files and can be verified independently:
+All prototypes were implemented as standalone, static HTML/SVG files during the Phase 4 concept study (subsequently eliminated during repository cleanup):
 
-- [public/concepts/concept-a.html](file:///c:/Users/ayush/OneDrive/Desktop/orv_project/kim_project/public/concepts/concept-a.html) — Concept A: Celestial Atlas
-- [public/concepts/concept-b.html](file:///c:/Users/ayush/OneDrive/Desktop/orv_project/kim_project/public/concepts/concept-b.html) — Concept B: Cosmic Manuscript
-- [public/concepts/concept-c.html](file:///c:/Users/ayush/OneDrive/Desktop/orv_project/kim_project/public/concepts/concept-c.html) — Concept C: Living Star Stream
-- [public/concepts/index.html](file:///c:/Users/ayush/OneDrive/Desktop/orv_project/kim_project/public/concepts/index.html) — Side-by-Side Comparison & Live Concept Switcher
+- `concept-a.html` — Concept A: Celestial Atlas
+- `concept-b.html` — Concept B: Cosmic Manuscript
+- `concept-c.html` — Concept C: Living Star Stream
+- `index.html` — Side-by-Side Comparison & Live Concept Switcher
 
 ---
 

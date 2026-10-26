@@ -59,6 +59,18 @@ The scenarios wait for no one. To run the Star Stream locally on your machine:
 ## 🌌 Contribution
 Feel free to open issues or submit pull requests if you want to expand the character encyclopedia, add more constellations, or create new quiz questions for the Incarnation Builder!
 
+## 📚 Documentation & Project History
+
+Historical milestone audits and verification reports have been organized into the [`docs/archive/phase-reports/`](docs/archive/phase-reports/) directory:
+
+- **Phase 1 (Canon Correctness & Data Integrity):** [`PHASE_1_CANON_SIGNOFF.md`](docs/archive/phase-reports/PHASE_1_CANON_SIGNOFF.md), [`PHASE_1_VERIFICATION_REPORT.md`](docs/archive/phase-reports/PHASE_1_VERIFICATION_REPORT.md)
+- **Phase 2 (Accessibility & W3C APG Standards):** [`PHASE_2_ACCESSIBILITY_SIGNOFF.md`](docs/archive/phase-reports/PHASE_2_ACCESSIBILITY_SIGNOFF.md), [`PHASE_2_FINAL_REVIEW.md`](docs/archive/phase-reports/PHASE_2_FINAL_REVIEW.md)
+- **Phase 3 (Performance & Bundle Tuning):** [`PHASE_3_PERFORMANCE_REPORT.md`](docs/archive/phase-reports/PHASE_3_PERFORMANCE_REPORT.md)
+- **Phase 4 (Constellation Observatory & Star Atlas):** [`PHASE_4_VISUAL_REFINEMENT_REPORT.md`](docs/archive/phase-reports/PHASE_4_VISUAL_REFINEMENT_REPORT.md), [`STAR_STREAM_FINAL_ATLAS_IMPLEMENTATION_REPORT.md`](docs/archive/phase-reports/STAR_STREAM_FINAL_ATLAS_IMPLEMENTATION_REPORT.md)
+- **Phase 5 (Production Readiness & SEO):** [`PHASE_5_PRODUCTION_READINESS_REPORT.md`](docs/archive/phase-reports/PHASE_5_PRODUCTION_READINESS_REPORT.md)
+- **Artwork Provenance Audit:** [`STAR_STREAM_ARTWORK_PROVENANCE_REPORT.md`](docs/archive/phase-reports/STAR_STREAM_ARTWORK_PROVENANCE_REPORT.md)
+- **Repository Cleanup & Audit:** [`DEAD_CODE_CLEANUP_REPORT.md`](DEAD_CODE_CLEANUP_REPORT.md), [`MARKDOWN_DOCUMENTATION_INVENTORY.md`](MARKDOWN_DOCUMENTATION_INVENTORY.md)
+
 ---
 <div align="center">
   <i>[The Constellation 'Demon-like Judge of Fire' is satisfied with your work.]</i>
