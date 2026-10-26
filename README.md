@@ -28,9 +28,9 @@ Built with cutting-edge web technologies and a heavy focus on "glassmorphism" UI
 
 This project leverages modern frontend architecture to deliver blazing-fast performance and buttery-smooth animations:
 
-- **Framework:** [Next.js 14](https://nextjs.org/) (App Router)
-- **Language:** TypeScript / React
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/) & Vanilla CSS (for complex glassmorphism)
+- **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
+- **Language:** TypeScript / React 19
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/) & Vanilla CSS
 - **Animations:** [Framer Motion](https://www.framer.com/motion/) (Holographic glitch transitions, layout morphing)
 - **Image Generation:** `html-to-image` (Client-side DOM to PNG exporting)
 

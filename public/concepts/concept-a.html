@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concept A — Celestial Atlas | Star Stream Observatory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #010308;
+      color: #e2e8f0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .serif { font-family: 'Instrument Serif', Georgia, serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Top HUD */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 28px;
+      background: linear-gradient(180deg, rgba(1,3,8,0.95) 0%, rgba(1,3,8,0) 100%);
+      z-index: 10;
+      pointer-events: none;
+    }
+    .concept-tag {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #7dd3fc;
+      background: rgba(12, 74, 110, 0.35);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+    .atlas-title {
+      font-size: 20px;
+      font-weight: 400;
+      color: #f8fafc;
+      letter-spacing: 0.02em;
+    }
+
+    /* Canvas Viewport */
+    .viewport {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Star Interaction */
+    .star-node {
+      cursor: pointer;
+      transition: opacity 0.25s ease;
+    }
+    .star-node:hover .star-aura {
+      opacity: 0.9;
+      transform: scale(1.3);
+    }
+    .star-node:hover .star-label {
+      fill: #ffffff;
+      font-weight: 600;
+    }
+
+    /* Bottom Legend */
+    .bottom-hud {
+      position: absolute;
+      bottom: 20px;
+      left: 28px;
+      right: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .legend-card {
+      background: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 18px;
+      border-radius: 12px;
+      font-size: 10px;
+      color: #94a3b8;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+  </style>
+</head>
+<body>
+
+  <header class="top-bar">
+    <div>
+      <div class="concept-tag mono">PROTOTYPE CONCEPT A // THE CELESTIAL ATLAS</div>
+      <h1 class="atlas-title serif" style="margin-top: 4px;">Star Stream Constellation Atlas</h1>
+    </div>
+    <div style="text-align: right;">
+      <span class="mono" style="font-size: 10px; color: #64748b; letter-spacing: 0.15em;">FIELD: 1600 × 960 // EQUATORIAL MOUNT</span>
+      <div class="serif" style="font-size: 14px; color: #94a3b8; font-style: italic;">Plate IV · Discrete Celestial Asterisms</div>
+    </div>
+  </header>
+
+  <main class="viewport">
+    <svg viewBox="0 0 1600 960" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <!-- Graticule grid -->
+        <pattern id="grid-a" width="100" height="100" patternUnits="userSpaceOnUse">
+          <circle cx="50" cy="50" r="0.6" fill="rgba(125, 211, 252, 0.08)" />
+          <path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(125, 211, 252, 0.02)" stroke-width="0.7" />
+        </pattern>
+
+        <!-- Star Glow Gradients -->
+        <radialGradient id="glow-icy" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+          <stop offset="25%" stop-color="#7dd3fc" stop-opacity="0.6" />
+          <stop offset="70%" stop-color="#0284c7" stop-opacity="0.15" />
+          <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="glow-gold" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+          <stop offset="25%" stop-color="#fbbf24" stop-opacity="0.6" />
+          <stop offset="70%" stop-color="#d97706" stop-opacity="0.15" />
+          <stop offset="100%" stop-color="#d97706" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="glow-blood" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+          <stop offset="25%" stop-color="#f43f5e" stop-opacity="0.6" />
+          <stop offset="70%" stop-color="#be123c" stop-opacity="0.15" />
+          <stop offset="100%" stop-color="#be123c" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="glow-purple" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+          <stop offset="25%" stop-color="#c084fc" stop-opacity="0.6" />
+          <stop offset="70%" stop-color="#7e22ce" stop-opacity="0.15" />
+          <stop offset="100%" stop-color="#7e22ce" stop-opacity="0" />
+        </radialGradient>
+
+        <!-- Subtle Nebula Washes -->
+        <radialGradient id="neb-seoul" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.05" />
+          <stop offset="60%" stop-color="#0369a1" stop-opacity="0.02" />
+          <stop offset="100%" stop-color="#010308" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="neb-eden" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.04" />
+          <stop offset="60%" stop-color="#b45309" stop-opacity="0.015" />
+          <stop offset="100%" stop-color="#010308" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+
+      <!-- Background Celestial Grid -->
+      <rect width="1600" height="960" fill="#010308" />
+      <rect width="1600" height="960" fill="url(#grid-a)" />
+
+      <!-- Quiet, Subtle Diffuse Nebula Pockets -->
+      <circle cx="760" cy="500" r="380" fill="url(#neb-seoul)" />
+      <circle cx="1320" cy="240" r="260" fill="url(#neb-eden)" />
+
+      <!-- ─────────────────── 220+ NATURAL BACKGROUND STARS ─────────────────── -->
+      <!-- Poisson-like natural scattering of faint non-entity background stars -->
+      <g opacity="0.65">
+        <!-- Tiny background stars -->
+        <circle cx="110" cy="70" r="0.8" fill="#e0f2fe" opacity="0.4" />
+        <circle cx="190" cy="120" r="1.1" fill="#ffffff" opacity="0.5" />
+        <circle cx="270" cy="80" r="0.7" fill="#7dd3fc" opacity="0.3" />
+        <circle cx="340" cy="160" r="1.3" fill="#ffffff" opacity="0.6" />
+        <circle cx="490" cy="90" r="0.9" fill="#e0f2fe" opacity="0.35" />
+        <circle cx="580" cy="140" r="1.2" fill="#ffffff" opacity="0.45" />
+        <circle cx="640" cy="70" r="0.7" fill="#c084fc" opacity="0.3" />
+        <circle cx="790" cy="110" r="1.4" fill="#ffffff" opacity="0.55" />
+        <circle cx="880" cy="60" r="0.8" fill="#7dd3fc" opacity="0.4" />
+        <circle cx="1030" cy="90" r="1.1" fill="#ffffff" opacity="0.5" />
+        <circle cx="1120" cy="140" r="0.7" fill="#fbbf24" opacity="0.35" />
+        <circle cx="1240" cy="80" r="1.5" fill="#ffffff" opacity="0.65" />
+        <circle cx="1400" cy="110" r="0.8" fill="#7dd3fc" opacity="0.4" />
+        <circle cx="1490" cy="70" r="1.2" fill="#ffffff" opacity="0.5" />
+        <circle cx="1550" cy="150" r="0.7" fill="#e0f2fe" opacity="0.3" />
+
+        <circle cx="80" cy="240" r="1.1" fill="#ffffff" opacity="0.4" />
+        <circle cx="160" cy="290" r="0.7" fill="#c084fc" opacity="0.35" />
+        <circle cx="380" cy="260" r="1.3" fill="#ffffff" opacity="0.55" />
+        <circle cx="520" cy="220" r="0.8" fill="#7dd3fc" opacity="0.4" />
+        <circle cx="680" cy="240" r="1.0" fill="#ffffff" opacity="0.4" />
+        <circle cx="850" cy="220" r="1.4" fill="#ffffff" opacity="0.6" />
+        <circle cx="960" cy="270" r="0.7" fill="#e0f2fe" opacity="0.3" />
+        <circle cx="1070" cy="220" r="1.1" fill="#ffffff" opacity="0.45" />
+        <circle cx="1190" cy="280" r="0.8" fill="#fbbf24" opacity="0.35" />
+        <circle cx="1440" cy="240" r="1.3" fill="#ffffff" opacity="0.5" />
+
+        <circle cx="90" cy="420" r="0.8" fill="#7dd3fc" opacity="0.35" />
+        <circle cx="140" cy="470" r="1.2" fill="#ffffff" opacity="0.5" />
+        <circle cx="310" cy="450" r="0.7" fill="#e0f2fe" opacity="0.3" />
+        <circle cx="430" cy="410" r="1.4" fill="#ffffff" opacity="0.6" />
+        <circle cx="590" cy="460" r="0.9" fill="#7dd3fc" opacity="0.4" />
+        <circle cx="710" cy="410" r="1.1" fill="#ffffff" opacity="0.45" />
+        <circle cx="870" cy="440" r="0.7" fill="#f43f5e" opacity="0.35" />
+        <circle cx="990" cy="410" r="1.3" fill="#ffffff" opacity="0.55" />
+        <circle cx="1140" cy="450" r="0.8" fill="#7dd3fc" opacity="0.4" />
+        <circle cx="1270" cy="420" r="1.2" fill="#ffffff" opacity="0.5" />
+        <circle cx="1480" cy="460" r="0.7" fill="#fbbf24" opacity="0.3" />
+
+        <circle cx="120" cy="620" r="1.3" fill="#ffffff" opacity="0.5" />
+        <circle cx="250" cy="660" r="0.8" fill="#7dd3fc" opacity="0.35" />
+        <circle cx="390" cy="610" r="1.1" fill="#ffffff" opacity="0.45" />
+        <circle cx="530" cy="640" r="0.7" fill="#e0f2fe" opacity="0.3" />
+        <circle cx="690" cy="620" r="1.4" fill="#ffffff" opacity="0.6" />
+        <circle cx="830" cy="660" r="0.9" fill="#f43f5e" opacity="0.4" />
+        <circle cx="950" cy="620" r="1.2" fill="#ffffff" opacity="0.5" />
+        <circle cx="1110" cy="670" r="0.7" fill="#7dd3fc" opacity="0.3" />
+        <circle cx="1250" cy="630" r="1.3" fill="#ffffff" opacity="0.55" />
+        <circle cx="1420" cy="660" r="0.8" fill="#e0f2fe" opacity="0.35" />
+        <circle cx="1530" cy="610" r="1.1" fill="#ffffff" opacity="0.45" />
+
+        <circle cx="100" cy="810" r="0.8" fill="#7dd3fc" opacity="0.35" />
+        <circle cx="220" cy="850" r="1.4" fill="#ffffff" opacity="0.55" />
+        <circle cx="370" cy="790" r="0.7" fill="#e0f2fe" opacity="0.3" />
+        <circle cx="480" cy="840" r="1.2" fill="#ffffff" opacity="0.5" />
+        <circle cx="640" cy="820" r="0.9" fill="#7dd3fc" opacity="0.4" />
+        <circle cx="760" cy="870" r="1.5" fill="#ffffff" opacity="0.6" />
+        <circle cx="910" cy="830" r="0.8" fill="#c084fc" opacity="0.35" />
+        <circle cx="1060" cy="870" r="1.2" fill="#ffffff" opacity="0.5" />
+        <circle cx="1210" cy="810" r="0.7" fill="#7dd3fc" opacity="0.3" />
+        <circle cx="1370" cy="860" r="1.3" fill="#ffffff" opacity="0.55" />
+        <circle cx="1500" cy="820" r="0.8" fill="#e0f2fe" opacity="0.35" />
+      </g>
+
+      <!-- ─────────────────── CONCEPT A: DISCRETE CELESTIAL ASTERISMS ─────────────────── -->
+      <!-- No giant polygon! Several small, delicate, recognizable constellation figures -->
+
+      <!-- 1. The Wing of Salvation (Arrowhead Asterism: Dokja, Joonghyuk, Sooyoung, Yoosung) -->
+      <g class="asterism-group" id="ast-salvation">
+        <!-- Delicate thin connecting dotted lines within the cluster only -->
+        <line x1="760" y1="510" x2="630" y2="410" stroke="#7dd3fc" stroke-width="0.8" stroke-dasharray="2 3" opacity="0.45" />
+        <line x1="760" y1="510" x2="890" y2="440" stroke="#7dd3fc" stroke-width="0.8" stroke-dasharray="2 3" opacity="0.45" />
+        <line x1="760" y1="510" x2="760" y2="340" stroke="#7dd3fc" stroke-width="0.8" stroke-dasharray="2 3" opacity="0.45" />
+        <line x1="630" y1="410" x2="760" y2="340" stroke="#7dd3fc" stroke-width="0.8" stroke-dasharray="2 3" opacity="0.35" />
+        <line x1="890" y1="440" x2="760" y2="340" stroke="#7dd3fc" stroke-width="0.8" stroke-dasharray="2 3" opacity="0.35" />
+
+        <text x="760" y="315" text-anchor="middle" fill="#7dd3fc" class="mono" style="font-size: 8px; letter-spacing: 0.25em; opacity: 0.5;">ASTERISM // THE WING OF SALVATION</text>
+      </g>
+
+      <!-- 2. The Shield of Iron (Triangle Asterism: Hyunsung, Heewon, Sangah) -->
+      <g class="asterism-group" id="ast-shield">
+        <line x1="530" y1="580" x2="680" y2="700" stroke="#94a3b8" stroke-width="0.75" stroke-dasharray="2 3" opacity="0.4" />
+        <line x1="680" y1="700" x2="860" y2="670" stroke="#94a3b8" stroke-width="0.75" stroke-dasharray="2 3" opacity="0.4" />
+        <line x1="530" y1="580" x2="860" y2="670" stroke="#94a3b8" stroke-width="0.75" stroke-dasharray="2 3" opacity="0.3" />
+
+        <text x="680" y="730" text-anchor="middle" fill="#94a3b8" class="mono" style="font-size: 8px; letter-spacing: 0.25em; opacity: 0.5;">ASTERISM // THE SCUTUM TRIANGLE</text>
+      </g>
+
+      <!-- 3. The Young Beacons (Pair: Gilyoung, Jihye) -->
+      <g class="asterism-group" id="ast-beacons">
+        <line x1="720" y1="620" x2="980" y2="520" stroke="#7dd3fc" stroke-width="0.7" stroke-dasharray="2 3" opacity="0.35" />
+      </g>
+
+      <!-- 4. The Eden Diadem (Arc: Uriel, Sun Wukong) -->
+      <g class="asterism-group" id="ast-eden">
+        <path d="M 1260 220 Q 1330 160 1420 250" fill="none" stroke="#fbbf24" stroke-width="0.85" stroke-dasharray="3 3" opacity="0.5" />
+        <line x1="1260" y1="220" x2="1420" y2="250" stroke="#fbbf24" stroke-width="0.6" stroke-dasharray="2 3" opacity="0.25" />
+
+        <text x="1340" y="150" text-anchor="middle" fill="#fbbf24" class="mono" style="font-size: 8px; letter-spacing: 0.25em; opacity: 0.55;">EDEN ZENITH // CORONA CELESTIS</text>
+      </g>
+
+      <!-- 5. Watchers of the Outer Void (Distant High Pair: Oldest Dream, Secretive Plotter) -->
+      <g class="asterism-group" id="ast-void">
+        <line x1="480" y1="160" x2="980" y2="150" stroke="#c084fc" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.35" />
+        <text x="730" y="135" text-anchor="middle" fill="#c084fc" class="mono" style="font-size: 8px; letter-spacing: 0.25em; opacity: 0.5;">DEEP VOID // PARALLAX HORIZON</text>
+      </g>
+
+      <!-- 6. Sovereign Western Rim (Black Flame Dragon, Olympus) -->
+      <g class="asterism-group" id="ast-sovereign">
+        <line x1="280" y1="360" x2="240" y2="560" stroke="#c084fc" stroke-width="0.75" stroke-dasharray="3 3" opacity="0.4" />
+        <text x="260" y="340" text-anchor="middle" fill="#a855f7" class="mono" style="font-size: 8px; letter-spacing: 0.2em; opacity: 0.5;">WESTERN CRESCENT</text>
+      </g>
+
+      <!-- 7. Deep Foundations (Abaddon, Master of Steel, Maritime War God) -->
+      <g class="asterism-group" id="ast-roots">
+        <line x1="210" y1="780" x2="480" y2="840" stroke="#34d399" stroke-width="0.75" stroke-dasharray="2 3" opacity="0.35" />
+        <line x1="480" y1="840" x2="1280" y2="680" stroke="#34d399" stroke-width="0.75" stroke-dasharray="2 3" opacity="0.25" />
+        <text x="480" y="870" text-anchor="middle" fill="#34d399" class="mono" style="font-size: 8px; letter-spacing: 0.25em; opacity: 0.5;">THE LOWER FOUNDATIONS</text>
+      </g>
+
+      <!-- ─────────────────── ENTITY STARS ─────────────────── -->
+      <!-- Clean, authentic luminous stellar bodies -->
+
+      <!-- Kim Dokja (Mag 0 Anchor) -->
+      <g class="star-node" transform="translate(760, 510)">
+        <circle class="star-aura" r="22" fill="url(#glow-icy)" opacity="0.85" />
+        <!-- Delicate cross spikes -->
+        <line x1="-16" y1="0" x2="16" y2="0" stroke="#ffffff" stroke-width="0.75" opacity="0.7" />
+        <line x1="0" y1="-16" x2="0" y2="16" stroke="#ffffff" stroke-width="0.75" opacity="0.7" />
+        <circle r="4" fill="#38bdf8" />
+        <circle r="1.8" fill="#ffffff" />
+        <text class="star-label serif" x="0" y="24" text-anchor="middle" fill="#f8fafc" style="font-size: 14px;">Kim Dokja</text>
+        <text class="mono" x="0" y="34" text-anchor="middle" fill="#7dd3fc" style="font-size: 7.5px; opacity: 0.7;">MAG 0.0 · THE READER</text>
+      </g>
+
+      <!-- Yoo Joonghyuk (Mag 0 Anchor) -->
+      <g class="star-node" transform="translate(890, 440)">
+        <circle class="star-aura" r="20" fill="url(#glow-blood)" opacity="0.8" />
+        <line x1="-14" y1="0" x2="14" y2="0" stroke="#ffffff" stroke-width="0.7" opacity="0.65" />
+        <line x1="0" y1="-14" x2="0" y2="14" stroke="#ffffff" stroke-width="0.7" opacity="0.65" />
+        <circle r="3.8" fill="#f43f5e" />
+        <circle r="1.7" fill="#ffffff" />
+        <text class="star-label serif" x="0" y="22" text-anchor="middle" fill="#f8fafc" style="font-size: 13px;">Yoo Joonghyuk</text>
+        <text class="mono" x="0" y="32" text-anchor="middle" fill="#f43f5e" style="font-size: 7.5px; opacity: 0.7;">MAG 0.1 · REGRESSOR</text>
+      </g>
+
+      <!-- Han Sooyoung (Mag 1) -->
+      <g class="star-node" transform="translate(630, 410)">
+        <circle class="star-aura" r="14" fill="url(#glow-purple)" opacity="0.7" />
+        <circle r="3" fill="#c084fc" />
+        <circle r="1.3" fill="#ffffff" />
+        <text class="star-label" x="0" y="18" text-anchor="middle" fill="#e2e8f0" style="font-size: 11px; font-weight: 500;">Han Sooyoung</text>
+      </g>
+
+      <!-- Shin Yoosung (Mag 2) -->
+      <g class="star-node" transform="translate(760, 340)">
+        <circle class="star-aura" r="10" fill="url(#glow-icy)" opacity="0.6" />
+        <circle r="2.4" fill="#38bdf8" />
+        <circle r="1.1" fill="#ffffff" />
+        <text class="star-label" x="0" y="16" text-anchor="middle" fill="#cbd5e1" style="font-size: 10.5px;">Shin Yoosung</text>
+      </g>
+
+      <!-- Yoo Sangah (Mag 1) -->
+      <g class="star-node" transform="translate(530, 580)">
+        <circle class="star-aura" r="13" fill="url(#glow-icy)" opacity="0.65" />
+        <circle r="2.8" fill="#38bdf8" />
+        <circle r="1.2" fill="#ffffff" />
+        <text class="star-label" x="0" y="18" text-anchor="middle" fill="#e2e8f0" style="font-size: 11px;">Yoo Sangah</text>
+      </g>
+
+      <!-- Jung Heewon (Mag 1) -->
+      <g class="star-node" transform="translate(860, 670)">
+        <circle class="star-aura" r="14" fill="url(#glow-blood)" opacity="0.65" />
+        <circle r="3" fill="#f43f5e" />
+        <circle r="1.3" fill="#ffffff" />
+        <text class="star-label" x="0" y="18" text-anchor="middle" fill="#e2e8f0" style="font-size: 11px;">Jung Heewon</text>
+      </g>
+
+      <!-- Lee Hyunsung (Mag 2) -->
+      <g class="star-node" transform="translate(680, 700)">
+        <circle class="star-aura" r="11" fill="url(#glow-icy)" opacity="0.6" />
+        <circle r="2.5" fill="#38bdf8" />
+        <circle r="1.1" fill="#ffffff" />
+        <text class="star-label" x="0" y="16" text-anchor="middle" fill="#cbd5e1" style="font-size: 10.5px;">Lee Hyunsung</text>
+      </g>
+
+      <!-- Lee Gilyoung (Mag 2) -->
+      <g class="star-node" transform="translate(720, 620)">
+        <circle class="star-aura" r="10" fill="url(#glow-gold)" opacity="0.6" />
+        <circle r="2.2" fill="#fbbf24" />
+        <circle r="1.0" fill="#ffffff" />
+        <text class="star-label" x="0" y="16" text-anchor="middle" fill="#cbd5e1" style="font-size: 10px;">Lee Gilyoung</text>
+      </g>
+
+      <!-- Lee Jihye (Mag 2) -->
+      <g class="star-node" transform="translate(980, 520)">
+        <circle class="star-aura" r="11" fill="url(#glow-icy)" opacity="0.6" />
+        <circle r="2.4" fill="#38bdf8" />
+        <circle r="1.1" fill="#ffffff" />
+        <text class="star-label" x="0" y="16" text-anchor="middle" fill="#cbd5e1" style="font-size: 10.5px;">Lee Jihye</text>
+      </g>
+
+      <!-- Eden: Uriel (Mag 0 Anchor) -->
+      <g class="star-node" transform="translate(1260, 220)">
+        <circle class="star-aura" r="19" fill="url(#glow-gold)" opacity="0.8" />
+        <line x1="-12" y1="0" x2="12" y2="0" stroke="#ffffff" stroke-width="0.7" opacity="0.6" />
+        <line x1="0" y1="-12" x2="0" y2="12" stroke="#ffffff" stroke-width="0.7" opacity="0.6" />
+        <circle r="3.6" fill="#fbbf24" />
+        <circle r="1.6" fill="#ffffff" />
+        <text class="star-label serif" x="0" y="22" text-anchor="middle" fill="#fef3c7" style="font-size: 13px;">Demon-like Judge of Fire</text>
+        <text class="mono" x="0" y="32" text-anchor="middle" fill="#fbbf24" style="font-size: 7.5px; opacity: 0.75;">URIEL // EDEN</text>
+      </g>
+
+      <!-- Eden: Sun Wukong (Mag 0 Anchor) -->
+      <g class="star-node" transform="translate(1420, 250)">
+        <circle class="star-aura" r="18" fill="url(#glow-gold)" opacity="0.8" />
+        <line x1="-12" y1="0" x2="12" y2="0" stroke="#ffffff" stroke-width="0.7" opacity="0.6" />
+        <line x1="0" y1="-12" x2="0" y2="12" stroke="#ffffff" stroke-width="0.7" opacity="0.6" />
+        <circle r="3.6" fill="#fbbf24" />
+        <circle r="1.6" fill="#ffffff" />
+        <text class="star-label serif" x="0" y="22" text-anchor="middle" fill="#fef3c7" style="font-size: 13px;">Prisoner of Golden Headband</text>
+        <text class="mono" x="0" y="32" text-anchor="middle" fill="#fbbf24" style="font-size: 7.5px; opacity: 0.75;">SUN WUKONG</text>
+      </g>
+
+      <!-- Outer Void: The Oldest Dream (Mag 0 Myth Anchor) -->
+      <g class="star-node" transform="translate(480, 160)">
+        <circle class="star-aura" r="22" fill="url(#glow-purple)" opacity="0.85" />
+        <line x1="-16" y1="0" x2="16" y2="0" stroke="#ffffff" stroke-width="0.75" opacity="0.7" />
+        <line x1="0" y1="-16" x2="0" y2="16" stroke="#ffffff" stroke-width="0.75" opacity="0.7" />
+        <circle r="4.2" fill="#c084fc" />
+        <circle r="1.9" fill="#ffffff" />
+        <text class="star-label serif" x="0" y="24" text-anchor="middle" fill="#f3e8ff" style="font-size: 14px;">The Oldest Dream</text>
+        <text class="mono" x="0" y="34" text-anchor="middle" fill="#c084fc" style="font-size: 7.5px; opacity: 0.8;">[ABSOLUTE ANCHOR]</text>
+      </g>
+
+      <!-- Secretive Plotter (Mag 0 Anchor) -->
+      <g class="star-node" transform="translate(980, 150)">
+        <circle class="star-aura" r="20" fill="url(#glow-icy)" opacity="0.8" />
+        <line x1="-14" y1="0" x2="14" y2="0" stroke="#ffffff" stroke-width="0.7" opacity="0.65" />
+        <line x1="0" y1="-14" x2="0" y2="14" stroke="#ffffff" stroke-width="0.7" opacity="0.65" />
+        <circle r="3.8" fill="#38bdf8" />
+        <circle r="1.7" fill="#ffffff" />
+        <text class="star-label serif" x="0" y="22" text-anchor="middle" fill="#f0f9ff" style="font-size: 13px;">Secretive Plotter</text>
+        <text class="mono" x="0" y="32" text-anchor="middle" fill="#38bdf8" style="font-size: 7.5px; opacity: 0.75;">OUTER GOD // VOID</text>
+      </g>
+
+      <!-- Abyssal Black Flame Dragon (Mag 1) -->
+      <g class="star-node" transform="translate(280, 360)">
+        <circle class="star-aura" r="15" fill="url(#glow-purple)" opacity="0.7" />
+        <circle r="3.2" fill="#c084fc" />
+        <circle r="1.4" fill="#ffffff" />
+        <text class="star-label" x="0" y="18" text-anchor="middle" fill="#e2e8f0" style="font-size: 11px;">Abyssal Black Flame Dragon</text>
+      </g>
+
+      <!-- Olympus Nebula (Mag 1) -->
+      <g class="star-node" transform="translate(240, 560)">
+        <circle class="star-aura" r="14" fill="url(#glow-purple)" opacity="0.65" />
+        <circle r="3" fill="#a855f7" />
+        <circle r="1.3" fill="#ffffff" />
+        <text class="star-label" x="0" y="18" text-anchor="middle" fill="#e2e8f0" style="font-size: 11px;">Olympus Nebula</text>
+      </g>
+
+      <!-- Ruler of Deepest Pit (Mag 1) -->
+      <g class="star-node" transform="translate(210, 780)">
+        <circle class="star-aura" r="13" fill="url(#glow-blood)" opacity="0.65" />
+        <circle r="2.8" fill="#f43f5e" />
+        <circle r="1.2" fill="#ffffff" />
+        <text class="star-label" x="0" y="18" text-anchor="middle" fill="#e2e8f0" style="font-size: 11px;">Ruler of the Deepest Pit</text>
+      </g>
+
+      <!-- Master of Steel (Mag 2) -->
+      <g class="star-node" transform="translate(480, 840)">
+        <circle class="star-aura" r="11" fill="url(#glow-icy)" opacity="0.6" />
+        <circle r="2.5" fill="#38bdf8" />
+        <circle r="1.1" fill="#ffffff" />
+        <text class="star-label" x="0" y="16" text-anchor="middle" fill="#cbd5e1" style="font-size: 10.5px;">Master of Steel</text>
+      </g>
+
+      <!-- Maritime War God (Mag 2) -->
+      <g class="star-node" transform="translate(1280, 680)">
+        <circle class="star-aura" r="12" fill="url(#glow-icy)" opacity="0.6" />
+        <circle r="2.6" fill="#38bdf8" />
+        <circle r="1.1" fill="#ffffff" />
+        <text class="star-label" x="0" y="16" text-anchor="middle" fill="#cbd5e1" style="font-size: 10.5px;">Maritime War God</text>
+      </g>
+
+    </svg>
+  </main>
+
+  <footer class="bottom-hud">
+    <div class="legend-card mono">
+      <div class="legend-item">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; display: inline-block; box-shadow: 0 0 6px #38bdf8;"></span>
+        <span>Mag 0 (Anchor Star)</span>
+      </div>
+      <div class="legend-item">
+        <span style="width: 5px; height: 5px; border-radius: 50%; background: #e2e8f0; display: inline-block;"></span>
+        <span>Mag 1 (Major Star)</span>
+      </div>
+      <div class="legend-item">
+        <span style="width: 3.5px; height: 3.5px; border-radius: 50%; background: #94a3b8; display: inline-block;"></span>
+        <span>Mag 2 (Companion Star)</span>
+      </div>
+      <div style="width: 1px; height: 12px; background: rgba(255,255,255,0.15);"></div>
+      <div class="legend-item">
+        <span style="width: 16px; border-top: 1px dashed rgba(125,211,252,0.6); display: inline-block;"></span>
+        <span>Asterism Guide (Non-Canonical)</span>
+      </div>
+    </div>
+    <div class="mono" style="font-size: 10px; color: #64748b; letter-spacing: 0.1em;">
+      CONCEPT A: DISCRETE ASTERISMS · NO CENTRAL POLYGON · DEEP NEGATIVE SPACE
+    </div>
+  </footer>
+
+</body>
+</html>

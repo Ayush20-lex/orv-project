@@ -43,6 +43,9 @@ next-env.d.ts
 *.swp
 *.swo
 
+# scratch
+/scratch/
+
 # v0 sandbox internal files (legacy)
 __v0_runtime_loader.js
 __v0_devtools.tsx

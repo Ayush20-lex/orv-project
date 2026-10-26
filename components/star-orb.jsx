@@ -18,49 +18,45 @@ export default function StarOrbCanvas({ className = "", style = {} }) {
     const camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 100);
     camera.position.z = 5.5;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "low-power" });
     renderer.setSize(w, h);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
     // ── Meshes ──────────────────────────────────────────────────────
-    const outer = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(1.85, 1),
-      new THREE.MeshBasicMaterial({
-        color: "#82b1ff",
-        wireframe: true,
-        transparent: true,
-        opacity: 0.52,
-      })
-    );
+    const outerGeo = new THREE.IcosahedronGeometry(1.85, 1);
+    const outerMat = new THREE.MeshBasicMaterial({
+      color: "#82b1ff",
+      wireframe: true,
+      transparent: true,
+      opacity: 0.52,
+    });
+    const outer = new THREE.Mesh(outerGeo, outerMat);
 
-    const inner = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(1.15, 0),
-      new THREE.MeshBasicMaterial({
-        color: "#ff4d4d",
-        wireframe: true,
-        transparent: true,
-        opacity: 0.3,
-      })
-    );
+    const innerGeo = new THREE.IcosahedronGeometry(1.15, 0);
+    const innerMat = new THREE.MeshBasicMaterial({
+      color: "#ff4d4d",
+      wireframe: true,
+      transparent: true,
+      opacity: 0.3,
+    });
+    const inner = new THREE.Mesh(innerGeo, innerMat);
 
-    const core = new THREE.Mesh(
-      new THREE.SphereGeometry(0.4, 24, 24),
-      new THREE.MeshBasicMaterial({ color: "#82b1ff", transparent: true, opacity: 0.65 })
-    );
+    const coreGeo = new THREE.SphereGeometry(0.4, 24, 24);
+    const coreMat = new THREE.MeshBasicMaterial({ color: "#82b1ff", transparent: true, opacity: 0.65 });
+    const core = new THREE.Mesh(coreGeo, coreMat);
 
-    const halo = new THREE.Mesh(
-      new THREE.SphereGeometry(0.78, 16, 16),
-      new THREE.MeshBasicMaterial({
-        color: "#82b1ff",
-        transparent: true,
-        opacity: 0.07,
-        side: THREE.BackSide,
-      })
-    );
+    const haloGeo = new THREE.SphereGeometry(0.78, 16, 16);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: "#82b1ff",
+      transparent: true,
+      opacity: 0.07,
+      side: THREE.BackSide,
+    });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
 
-    // Main group receives the mouse-tilt rotation
+    // Main group receives mouse-tilt rotation
     const mainGroup = new THREE.Group();
     mainGroup.add(outer, inner, core, halo);
     scene.add(mainGroup);
@@ -78,37 +74,60 @@ export default function StarOrbCanvas({ className = "", style = {} }) {
     }
     const particleGeo = new THREE.BufferGeometry();
     particleGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    const particles = new THREE.Points(
-      particleGeo,
-      new THREE.PointsMaterial({
-        color: "#82b1ff",
-        size: 0.04,
-        sizeAttenuation: true,
-        transparent: true,
-        opacity: 0.72,
-      })
-    );
+    const particlesMat = new THREE.PointsMaterial({
+      color: "#82b1ff",
+      size: 0.04,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.72,
+    });
+    const particles = new THREE.Points(particleGeo, particlesMat);
     scene.add(particles);
 
     // ── Lights ──────────────────────────────────────────────────────
     const blueLight = new THREE.PointLight("#82b1ff", 2.4, 12);
-    const redLight  = new THREE.PointLight("#ff4d4d", 0.7,  7);
+    const redLight  = new THREE.PointLight("#ff4d4d", 0.7, 7);
     redLight.position.set(2.5, -2, 1.5);
-    scene.add(blueLight, redLight, new THREE.AmbientLight("#ffffff", 0.1));
+    const ambientLight = new THREE.AmbientLight("#ffffff", 0.1);
+    scene.add(blueLight, redLight, ambientLight);
 
-    // ── Mouse tracking ──────────────────────────────────────────────
+    // ── Motion & Visibility Checks ──────────────────────────────────
+    let isVisible = false;
+    let isTabActive = typeof document !== "undefined" ? !document.hidden : true;
+    const prefersReducedMotion = typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false;
+
     let mx = 0, my = 0;
     const onMouseMove = (e) => {
+      if (prefersReducedMotion || !isVisible || !isTabActive) return;
       mx = (e.clientX / window.innerWidth  - 0.5) * 2;
       my = (e.clientY / window.innerHeight - 0.5) * 2;
     };
-    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
 
-    // ── Animation loop ──────────────────────────────────────────────
-    let t = 0, raf;
+    // ── Animation Loop with Throttling / Pausing ───────────────────
+    let t = 0;
+    let raf = null;
+
+    const renderFrame = () => {
+      renderer.render(scene, camera);
+    };
+
     const animate = () => {
+      if (!isVisible || !isTabActive) {
+        raf = null;
+        return;
+      }
+
+      if (prefersReducedMotion) {
+        renderFrame();
+        raf = null;
+        return;
+      }
+
       raf = requestAnimationFrame(animate);
-      t  += 0.016;
+      t += 0.016;
 
       // Auto-rotation — each mesh gets its own axis for layered effect
       outer.rotation.y += 0.0028;
@@ -126,27 +145,95 @@ export default function StarOrbCanvas({ className = "", style = {} }) {
       mainGroup.rotation.x += (my * 0.25 - mainGroup.rotation.x) * 0.04;
       mainGroup.rotation.y += (mx * 0.25 - mainGroup.rotation.y) * 0.04;
 
-      renderer.render(scene, camera);
+      renderFrame();
     };
-    animate();
 
-    // ── Resize ──────────────────────────────────────────────────────
-    const onResize = () => {
-      const nw = container.offsetWidth;
-      const nh = container.offsetHeight;
+    // Pause when offscreen
+    let observer = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          isVisible = entry.isIntersecting;
+          if (isVisible && isTabActive && !raf) {
+            animate();
+          } else if (!isVisible && raf) {
+            cancelAnimationFrame(raf);
+            raf = null;
+          }
+        },
+        { threshold: 0.05 }
+      );
+      observer.observe(container);
+    } else {
+      isVisible = true;
+      animate();
+    }
+
+    // Pause when tab is hidden
+    const onVisibilityChange = () => {
+      isTabActive = !document.hidden;
+      if (isVisible && isTabActive && !raf) {
+        animate();
+      } else if (!isTabActive && raf) {
+        cancelAnimationFrame(raf);
+        raf = null;
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    // ── Resize with ResizeObserver ──────────────────────────────────
+    let resizeObserver = null;
+    const handleResize = (nw, nh) => {
       if (!nw || !nh) return;
       camera.aspect = nw / nh;
       camera.updateProjectionMatrix();
       renderer.setSize(nw, nh);
+      if (prefersReducedMotion) {
+        renderFrame();
+      }
     };
-    window.addEventListener("resize", onResize);
+
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect;
+          handleResize(width, height);
+        }
+      });
+      resizeObserver.observe(container);
+    } else {
+      const onResize = () => handleResize(container.offsetWidth, container.offsetHeight);
+      window.addEventListener("resize", onResize);
+    }
 
     // ── Cleanup ─────────────────────────────────────────────────────
     return () => {
-      cancelAnimationFrame(raf);
+      if (raf) cancelAnimationFrame(raf);
       window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("resize", onResize);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (observer) observer.disconnect();
+
+      // Dispose all geometries and materials
+      outerGeo.dispose();
+      outerMat.dispose();
+      innerGeo.dispose();
+      innerMat.dispose();
+      coreGeo.dispose();
+      coreMat.dispose();
+      haloGeo.dispose();
+      haloMat.dispose();
       particleGeo.dispose();
+      particlesMat.dispose();
+
+      mainGroup.clear();
+      scene.remove(mainGroup, particles, blueLight, redLight, ambientLight);
+      scene.clear();
+
+      // Force context loss to immediately release GPU resources
+      renderer.forceContextLoss();
       renderer.dispose();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
@@ -162,3 +249,4 @@ export default function StarOrbCanvas({ className = "", style = {} }) {
     />
   );
 }
+

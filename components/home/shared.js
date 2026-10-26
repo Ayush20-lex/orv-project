@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useSyncExternalStore } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ORV_QUOTES } from "../../lib/data/quotes";
 
 const COLORS = {
   abyss: "#05060a",
@@ -8,11 +9,12 @@ const COLORS = {
   icy: "#82b1ff",
   gold: "#ffd700",
   blood: "#ff4d4d",
-  dim: "#7b8496",
+  dim: "#94a3b8",
 };
 
 const displayFont = { fontFamily: "'Orbitron', sans-serif" };
-const uiFont = { fontFamily: "'Inter', sans-serif" };
+const serifFont = { fontFamily: "'Instrument Serif', Georgia, serif" };
+const uiFont = { fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" };
 const chatFont = { fontFamily: "'JetBrains Mono', monospace" };
 
 const COMPANION_CARDS = [
@@ -42,52 +44,25 @@ const COMPANION_CARDS = [
   },
 ];
 
-const ORV_QUOTES = [
-  {
-    text: "The person who read the story is now living inside it. The ending? Only he knows.",
-    source: "Omniscient Reader's Viewpoint",
-    align: "center",
-  },
-  {
-    text: "Don't close your eyes. The moment you do, someone dies.",
-    source: "System Warning — Main Scenario #1",
-    align: "left",
-    tone: "blood",
-  },
-  {
-    text: "There are 1,863 regressions in this story. This is the one that matters.",
-    source: "Yoo Joonghyuk — The Regressor",
-    align: "right",
-    tone: "gold",
-  },
-  {
-    text: "A constellation's power comes from being remembered. A reader's power comes from remembering.",
-    source: "Kim Dokja — The Sole Reader",
-    align: "center",
-    tone: "icy",
-  },
-];
+
+
+const emptySubscribe = () => () => {};
+
+const CLIENT_STARS = Array.from({ length: 90 }, (_, i) => ({
+  id: i,
+  top: ((i * 37 + 13) % 100),
+  left: ((i * 59 + 29) % 100),
+  size: ((i * 17) % 16) / 10 + 0.4,
+  delay: ((i * 23) % 60) / 10,
+  twinkleDur: ((i * 31) % 40) / 10 + 3,
+  driftDur: ((i * 41) % 250) / 10 + 20,
+  driftY: ((i * 19) % 160) / 10 + 6,
+}));
 
 function Starfield() {
-  // Stars are generated on the client only (inside useEffect) so the
-  // random values never differ between server and client render —
-  // generating them during render caused a React hydration mismatch.
-  const [stars, setStars] = useState([]);
-
-  useEffect(() => {
-    setStars(
-      Array.from({ length: 90 }, (_, i) => ({
-        id: i,
-        top: Math.random() * 100,
-        left: Math.random() * 100,
-        size: Math.random() * 1.6 + 0.4,
-        delay: Math.random() * 6,
-        twinkleDur: Math.random() * 4 + 3,
-        driftDur: Math.random() * 25 + 20,
-        driftY: Math.random() * 16 + 6,
-      }))
-    );
-  }, []);
+  const isClient = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const shouldReduceMotion = useReducedMotion();
+  const stars = isClient ? CLIENT_STARS : [];
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -96,8 +71,8 @@ function Starfield() {
           key={s.id}
           className="absolute rounded-full"
           style={{ top: `${s.top}%`, left: `${s.left}%`, width: s.size, height: s.size, background: "#dbe4ff" }}
-          animate={{ opacity: [0.1, 0.9, 0.1], y: [0, -s.driftY, 0] }}
-          transition={{
+          animate={shouldReduceMotion ? { opacity: 0.5 } : { opacity: [0.1, 0.9, 0.1], y: [0, -s.driftY, 0] }}
+          transition={shouldReduceMotion ? { duration: 0 } : {
             opacity: { duration: s.twinkleDur, delay: s.delay, repeat: Infinity, ease: "easeInOut" },
             y: { duration: s.driftDur, repeat: Infinity, ease: "easeInOut" },
           }}
@@ -108,6 +83,21 @@ function Starfield() {
 }
 
 function GlitchTitle({ text }) {
+  const shouldReduceMotion = useReducedMotion();
+
+  if (shouldReduceMotion) {
+    return (
+      <div className="relative select-none">
+        <h1
+          style={{ ...displayFont, color: "#eef2fb" }}
+          className="relative z-10 text-3xl sm:text-5xl md:text-6xl font-black tracking-tight leading-normal"
+        >
+          {text}
+        </h1>
+      </div>
+    );
+  }
+
   return (
     <div className="relative select-none">
       <motion.h1
@@ -163,4 +153,4 @@ function BracketedLine({ segments, muted, tone = "icy", className = "" }) {
   );
 }
 
-export { COLORS, displayFont, uiFont, chatFont, COMPANION_CARDS, ORV_QUOTES, Starfield, GlitchTitle, BracketedLine };
+export { COLORS, displayFont, serifFont, uiFont, chatFont, COMPANION_CARDS, ORV_QUOTES, Starfield, GlitchTitle, BracketedLine };

@@ -1,11 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles, Skull, Swords, ArrowRight } from "lucide-react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
-const StarOrbCanvas = dynamic(() => import("../star-orb"), { ssr: false, loading: () => null });
+import React from "react";
+import { motion } from "framer-motion";
 
-import { COLORS, displayFont, uiFont, BracketedLine, COMPANION_CARDS } from "./shared";
+import { COLORS, displayFont, serifFont, uiFont, BracketedLine, COMPANION_CARDS } from "./shared";
 
 export default function CompanionsGrid() {
   return (
@@ -24,8 +20,9 @@ export default function CompanionsGrid() {
         <p style={{ ...uiFont, color: COLORS.icy, letterSpacing: "0.2em" }} className="text-[10px] uppercase mb-3">
           [ Registered Companions ]
         </p>
-        <h2 style={{ ...displayFont, color: "#eef2fb" }} className="text-3xl sm:text-4xl font-black">
-          The People Who<br />Chose to Stay.
+        <h2 style={{ ...serifFont, color: "#eef2fb" }} className="text-3xl sm:text-4xl md:text-5xl font-normal leading-tight">
+          The People Who<br />
+          <span className="italic">Chose to Stay.</span>
         </h2>
       </motion.div>
 
@@ -60,15 +57,15 @@ export default function CompanionsGrid() {
                 {c.name.split(" ")[0]}
               </div>
               <div className="relative z-10">
-                <div className="flex items-center gap-1 mb-1">
+                <div className="flex items-center gap-1.5 mb-1.5">
                   <span style={{ color: nameColor }} className="font-extrabold text-[13px]">[</span>
-                  <span style={{ ...uiFont, color: nameColor }} className="font-bold text-[13px]">{c.name}</span>
+                  <span style={{ ...serifFont, color: nameColor }} className="text-xl font-normal tracking-wide">{c.name}</span>
                   <span style={{ color: nameColor }} className="font-extrabold text-[13px]">]</span>
                 </div>
-                <p style={{ ...uiFont, color: COLORS.dim }} className="text-[10px] uppercase tracking-wide mb-4">{c.title}</p>
+                <p style={{ ...uiFont, color: COLORS.dim }} className="text-[10px] uppercase tracking-wide mb-4 font-semibold">{c.title}</p>
                 <div className="mb-3"><BracketedLine segments={c.stats} /></div>
-                <p style={{ ...uiFont, color: "#4a5164" }} className="text-[13px] leading-[1.85] mb-4">{c.description}</p>
-                <p style={{ ...uiFont, color: `${nameColor}70` }} className="text-[11px] italic">{c.quote}</p>
+                <p style={{ ...uiFont, color: "#cbd5e1" }} className="text-[13px] leading-[1.85] mb-4">{c.description}</p>
+                <p style={{ ...serifFont, color: `${nameColor}dd` }} className="text-[14px] italic font-normal">&ldquo;{c.quote}&rdquo;</p>
               </div>
             </motion.div>
           );

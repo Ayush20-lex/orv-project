@@ -3,8 +3,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-const displayFont = { fontFamily: "Outfit, sans-serif" };
-const uiFont = { fontFamily: "Inter, sans-serif" };
+const displayFont = { fontFamily: "'Orbitron', sans-serif" };
+const uiFont = { fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" };
 
 export default function Loading() {
   return (
@@ -33,7 +33,7 @@ export default function Loading() {
           >
             [ Connecting to Star Stream ]
           </motion.p>
-          <p style={{ ...displayFont }} className="text-[#5c6272] text-[10px] tracking-widest">
+          <p style={{ ...displayFont }} className="text-[#94a3b8] text-[10px] tracking-widest font-medium">
             Synchronizing data with the constellations...
           </p>
         </div>

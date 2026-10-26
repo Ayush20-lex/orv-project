@@ -1,33 +1,23 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Sparkles, Skull, Swords } from "lucide-react";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+
 
 import Hero from "./home/hero-section";
 import StarStreamSection from "./home/star-stream-section";
 import ProtagonistSection from "./home/protagonist-section";
 import CompanionsGrid from "./home/companions-grid";
+import ObservatoryPreviewSection from "./home/observatory-preview-section";
 import QuotesSection from "./home/quotes-section";
 import { COLORS, uiFont, displayFont, chatFont, BracketedLine } from "./home/shared";
 
 // StarOrbCanvas is imported inside the components that need it
 
-function useStarStreamFonts() {
-  useEffect(() => {
-    const id = "starstream-fonts";
-    if (document.getElementById(id)) return;
-    const link = document.createElement("link");
-    link.id = id;
-    link.rel = "stylesheet";
-    link.href =
-      "https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap";
-    document.head.appendChild(link);
-  }, []);
-}
+// Fonts are loaded universally via app/layout.tsx
+
 
 function useKeyClick() {
   const ctxRef = useRef(null);
@@ -56,12 +46,17 @@ function useKeyClick() {
 
 function useCountUp(target, active, duration = 1400) {
   const [value, setValue] = useState(0);
+  const [prevActive, setPrevActive] = useState(active);
 
-  useEffect(() => {
+  if (prevActive !== active) {
+    setPrevActive(active);
     if (!active) {
       setValue(0);
-      return;
     }
+  }
+
+  useEffect(() => {
+    if (!active) return;
     let start = null;
     let raf;
     function step(ts) {
@@ -77,6 +72,8 @@ function useCountUp(target, active, duration = 1400) {
 
   return value;
 }
+
+const emptySubscribe = () => () => {};
 
 // ---- Modal Components ----
 function AttributesTab({ inView }) {
@@ -134,12 +131,12 @@ function AttributesTab({ inView }) {
           <li className="relative group cursor-help w-fit">
             <div className="flex gap-3 text-sm items-center">
               <Sparkles size={16} className="text-sky-400" />
-              <span style={uiFont} className="text-[#eef2fb] group-hover:text-white font-bold transition-colors">Omniscient Reader's Viewpoint</span>
+              <span style={uiFont} className="text-[#eef2fb] group-hover:text-white font-bold transition-colors">Omniscient Reader&apos;s Viewpoint</span>
             </div>
             {/* Tooltip */}
             <div className="absolute left-0 bottom-full mb-2 w-64 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50">
               <div className="bg-[#42a5f5]/90 backdrop-blur-md border-[2px] border-[#42a5f5] p-3 rounded shadow-[0_0_20px_-5px_rgba(66,165,245,0.4)]">
-                <p style={uiFont} className="text-xs text-white mb-1 font-bold">Omniscient Reader's Viewpoint (Lv. 1)</p>
+                <p style={uiFont} className="text-xs text-white mb-1 font-bold">Omniscient Reader&apos;s Viewpoint (Lv. 1)</p>
                 <p style={uiFont} className="text-[11px] text-[#eef2fb] leading-relaxed">Allows the user to read the thoughts and emotions of a character, or view their surroundings from a 3rd person perspective.</p>
               </div>
             </div>
@@ -213,13 +210,83 @@ function CompanionsTab() {
   );
 }
 
+const SYSTEM_TABS = [
+  { id: "attributes", label: "Attributes" },
+  { id: "scenarios", label: "Scenarios" },
+  { id: "companions", label: "Companions" }
+];
+
 function SystemWindowModal({ isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState("attributes");
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const modalRef = useRef(null);
+  const closeButtonRef = useRef(null);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+      if (e.key === "Tab") {
+        if (!modalRef.current) return;
+        const focusable = modalRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const timer = setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 50);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      clearTimeout(timer);
+    };
+  }, [isOpen, onClose]);
+
+  const handleTabKeyDown = (e, index) => {
+    let nextIndex = null;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      nextIndex = (index + 1) % SYSTEM_TABS.length;
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      nextIndex = (index - 1 + SYSTEM_TABS.length) % SYSTEM_TABS.length;
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      nextIndex = 0;
+    } else if (e.key === "End") {
+      e.preventDefault();
+      nextIndex = SYSTEM_TABS.length - 1;
+    }
+    if (nextIndex !== null) {
+      const nextTab = SYSTEM_TABS[nextIndex];
+      setActiveTab(nextTab.id);
+      setTimeout(() => {
+        document.getElementById(`system-tab-${nextTab.id}`)?.focus();
+      }, 0);
+    }
+  };
 
   if (!mounted) return null;
 
@@ -234,6 +301,10 @@ function SystemWindowModal({ isOpen, onClose }) {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
         >
           <motion.div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="system-window-modal-title"
             initial={{ scale: 0.95, y: 20, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.95, y: 20, opacity: 0 }}
@@ -244,11 +315,17 @@ function SystemWindowModal({ isOpen, onClose }) {
           <div className="flex items-center justify-between px-6 py-4 border-b border-[#42a5f5]/40 bg-[#42a5f5]/10">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-[#42a5f5] animate-pulse" />
-              <h3 style={{ ...displayFont }} className="text-sm uppercase tracking-widest font-bold text-white">
+              <h3 id="system-window-modal-title" style={{ ...displayFont }} className="text-sm uppercase tracking-widest font-bold text-white">
                 System Window
               </h3>
             </div>
-            <button onClick={onClose} className="text-[#82b1ff] hover:text-white transition-colors">
+            <button
+              ref={closeButtonRef}
+              type="button"
+              onClick={onClose}
+              aria-label="Close system window"
+              className="text-[#82b1ff] hover:text-white transition-colors p-1.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#82b1ff]"
+            >
               <X size={20} />
             </button>
           </div>
@@ -256,17 +333,24 @@ function SystemWindowModal({ isOpen, onClose }) {
           {/* Body */}
           <div className="flex flex-col md:flex-row h-[500px]">
             {/* Sidebar */}
-            <div className="w-full md:w-48 border-b md:border-b-0 md:border-r border-[#42a5f5]/30 p-4 bg-[#42a5f5]/5 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible">
-              {[
-                { id: "attributes", label: "Attributes" },
-                { id: "scenarios", label: "Scenarios" },
-                { id: "companions", label: "Companions" }
-              ].map(tab => (
+            <div
+              role="tablist"
+              aria-label="System Window Sections"
+              aria-orientation="vertical"
+              className="w-full md:w-48 border-b md:border-b-0 md:border-r border-[#42a5f5]/30 p-4 bg-[#42a5f5]/5 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible"
+            >
+              {SYSTEM_TABS.map((tab, idx) => (
                 <button
                   key={tab.id}
+                  id={`system-tab-${tab.id}`}
+                  role="tab"
+                  tabIndex={activeTab === tab.id ? 0 : -1}
+                  aria-selected={activeTab === tab.id}
+                  aria-controls={`system-tabpanel-${tab.id}`}
                   onClick={() => setActiveTab(tab.id)}
+                  onKeyDown={(e) => handleTabKeyDown(e, idx)}
                   style={uiFont}
-                  className={`flex-1 md:flex-none text-left px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all ${activeTab === tab.id ? "bg-[#42a5f5]/30 text-white border border-[#42a5f5]/50 shadow-[0_0_15px_-3px_rgba(66,165,245,0.3)]" : "text-[#82b1ff] hover:bg-[#42a5f5]/10 hover:text-white border border-transparent"}`}
+                  className={`flex-1 md:flex-none text-left px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#82b1ff] ${activeTab === tab.id ? "bg-[#42a5f5]/30 text-white border border-[#42a5f5]/50 shadow-[0_0_15px_-3px_rgba(66,165,245,0.3)]" : "text-[#82b1ff] hover:bg-[#42a5f5]/10 hover:text-white border border-transparent"}`}
                 >
                   {tab.label}
                 </button>
@@ -274,7 +358,12 @@ function SystemWindowModal({ isOpen, onClose }) {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 p-6 sm:p-8 overflow-y-auto">
+            <div
+              role="tabpanel"
+              id={`system-tabpanel-${activeTab}`}
+              aria-labelledby={`system-tab-${activeTab}`}
+              className="flex-1 p-6 sm:p-8 overflow-y-auto"
+            >
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
@@ -298,30 +387,67 @@ function SystemWindowModal({ isOpen, onClose }) {
   );
 }
 
+const isDesktopSubscribe = (callback) => {
+  window.addEventListener("resize", callback);
+  return () => window.removeEventListener("resize", callback);
+};
+const getIsDesktop = () => (typeof window !== "undefined" ? window.innerWidth >= 1024 : false);
+const getIsDesktopServer = () => false;
+
+function useIsDesktop() {
+  return useSyncExternalStore(isDesktopSubscribe, getIsDesktop, getIsDesktopServer);
+}
+
 // ---- Main Page Export ----
 export default function StarStreamLanding() {
-  useStarStreamFonts();
-  
   const [modalOpen, setModalOpen] = useState(false);
-  const [questOpen, setQuestOpen] = useState(true);
+  const triggerRef = useRef(null);
+  const isDesktop = useIsDesktop();
+  const [userDismissed, setUserDismissed] = useState(false);
+  const [userOpened, setUserOpened] = useState(false);
+
+  const questOpen = userOpened || (isDesktop && !userDismissed);
+
+  const handleOpenModal = useCallback((e) => {
+    triggerRef.current = e?.currentTarget || (typeof document !== "undefined" ? document.activeElement : null);
+    setModalOpen(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setModalOpen(false);
+    setTimeout(() => {
+      triggerRef.current?.focus();
+    }, 50);
+  }, []);
 
   return (
     <div className="min-h-screen text-slate-200 relative selection:bg-sky-500/30 selection:text-sky-100" style={{ background: COLORS.abyss }}>
-      <main className="relative z-10 flex flex-col pt-24 lg:pt-0">
+      <main aria-hidden={modalOpen} className="relative z-10 flex flex-col">
         {/* Quest Tracker */}
         <AnimatePresence>
           {questOpen ? (
             <motion.div
+              role="region"
+              aria-label="Main Scenario #1 Quest Tracker"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="fixed top-24 left-6 z-[40] max-w-xs md:max-w-sm rounded-xl p-5 shadow-[0_0_30px_-5px_rgba(66,165,245,0.3)] overflow-hidden cursor-pointer group backdrop-blur-md"
+              className="fixed top-24 left-4 sm:left-6 z-[40] max-w-[calc(100vw-2rem)] sm:max-w-xs md:max-w-sm rounded-xl p-5 shadow-[0_0_30px_-5px_rgba(66,165,245,0.3)] overflow-hidden group backdrop-blur-md"
               style={{ background: "rgba(10,25,50,0.85)", border: "2px solid rgba(66,165,245,0.5)" }}
-              onClick={() => setQuestOpen(false)}
             >
-              <div className="absolute inset-0 bg-[#42a5f5]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="flex items-center gap-2 mb-4 text-[#42a5f5]">
+              <div className="flex items-center justify-between mb-3 text-[#42a5f5]">
                 <h4 style={{ ...displayFont, fontWeight: 700 }} className="uppercase text-[11px] tracking-widest">&lt;Main Scenario #1&gt;</h4>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDismissed(true);
+                    setUserOpened(false);
+                  }}
+                  aria-label="Minimize quest tracker"
+                  className="text-[#82b1ff] hover:text-white transition-colors p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#82b1ff]"
+                >
+                  <X size={15} />
+                </button>
               </div>
               <div className="mb-4">
                 <p style={{ ...uiFont, color: "#eef2fb" }} className="text-[13px] leading-relaxed font-bold"><span className="text-[#82b1ff] font-semibold mr-1">Objective:</span>Kill one or more living things.</p>
@@ -339,26 +465,33 @@ export default function StarStreamLanding() {
             </motion.div>
           ) : (
             <motion.button
+              type="button"
+              aria-label="Open Main Scenario #1 Quest Tracker"
+              title="Open Main Scenario #1 Quest Tracker"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setQuestOpen(true)}
-              className="fixed top-24 left-6 z-[40] w-12 h-12 rounded-full flex items-center justify-center bg-[#0a1932]/80 border-2 border-[#42a5f5]/50 text-[#42a5f5] shadow-[0_0_20px_-5px_rgba(66,165,245,0.4)] backdrop-blur-md hover:bg-[#42a5f5]/20 transition-colors"
+              onClick={() => {
+                setUserOpened(true);
+                setUserDismissed(false);
+              }}
+              className="fixed top-24 left-4 sm:left-6 z-[40] w-12 h-12 rounded-full flex items-center justify-center bg-[#0a1932]/80 border-2 border-[#42a5f5]/50 text-[#42a5f5] shadow-[0_0_20px_-5px_rgba(66,165,245,0.4)] backdrop-blur-md hover:bg-[#42a5f5]/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#82b1ff] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
               <Swords size={18} />
             </motion.button>
           )}
         </AnimatePresence>
 
-        <Hero onOpenAttributes={() => setModalOpen(true)} />
+        <Hero onOpenAttributes={handleOpenModal} />
         <StarStreamSection />
         <ProtagonistSection />
         <CompanionsGrid />
+        <ObservatoryPreviewSection />
         <QuotesSection />
       </main>
 
-      <SystemWindowModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <SystemWindowModal isOpen={modalOpen} onClose={handleCloseModal} />
     </div>
   );
 }

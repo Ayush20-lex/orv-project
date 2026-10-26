@@ -1,158 +1,92 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, AlertTriangle, ShieldCheck } from "lucide-react";
+import { CHARACTERS, type CharacterRecord } from "@/lib/data/characters";
+
+const emptySubscribe = () => () => {};
 
 const COLORS = {
   abyss: "#05070d",
   icy: "#82b1ff",
   blood: "#ff4d4d",
   gold: "#ffca28",
-  dim: "#3d4353",
+  dim: "#94a3b8",
   panelEdge: "rgba(130, 177, 255, 0.12)",
 };
 
-const displayFont = { fontFamily: "Outfit, sans-serif" };
-const uiFont = { fontFamily: "Inter, sans-serif" };
-
-const CHARACTERS = [
-  {
-    id: "kim-dokja",
-    name: "Kim Dokja",
-    title: "The Sole Reader",
-    modifier: "[Demon King of Salvation]",
-    sponsor: "None (Independent)",
-    personalAttribute: "Eight Lives (Hero), Scenario Interpreter",
-    exclusiveSkills: "Omniscient Reader's Viewpoint, Bookmark, Fourth Wall",
-    stigma: "Bookmark, Omniscient Reader's Viewpoint",
-    stats: "STR: 62 | AGI: 58 | END: 71 | Mana: 45",
-    description: "An ordinary office worker who was the sole reader of the web novel 'Three Ways to Survive in a Ruined World' for over ten years. When the apocalypse suddenly turns the world into the exact setting of the novel, he uses his exclusive knowledge to survive, manipulate the scenarios, and save his companions. Known for his self-sacrificial tendencies and deceptive strategies.",
-    tone: "icy",
-    image: "/images/kim-dokja-potrait2.jpg",
-  },
-  {
-    id: "yoo-joonghyuk",
-    name: "Yoo Joonghyuk",
-    title: "The Regressor",
-    modifier: "[Supreme King]",
-    sponsor: "None (Independent)",
-    personalAttribute: "Regressor (3rd Turn), Pro Gamer",
-    exclusiveSkills: "Sage's Eye, Hand to Hand Combat",
-    stigma: "Regression",
-    stats: "STR: 99 | AGI: 99 | END: 99 | Mana: 99",
-    description: "The protagonist of the original novel, a regressor trapped in an endless cycle of repeating his life after death. After 1,863 iterations of immense suffering and loss, his personality has become cold and ruthless. However, beneath his hardened exterior lies a desperate desire to reach the end of the scenarios and protect his true companions.",
-    tone: "blood",
-    image: "/images/yoo-joonghyuk.jpg",
-  },
-  {
-    id: "han-sooyoung",
-    name: "Han Sooyoung",
-    title: "The Plagiarist",
-    modifier: "[Director of the False Last Act]",
-    sponsor: "Abyssal Black Flame Dragon",
-    personalAttribute: "Author (Rare), Specialized Plagiarist",
-    exclusiveSkills: "Avatar, Lie Detection",
-    stigma: "Avatar",
-    stats: "STR: 35 | AGI: 60 | END: 40 | Mana: 85",
-    description: "A genius writer who authored 'SSSSS-grade Infinite Regressor', which heavily plagiarized Kim Dokja's favorite novel. Sharp, cynical, and incredibly intelligent, she often acts as the brain of Kim Dokja's Company when he is absent. Despite her selfish facade, she proves to be one of the most fiercely loyal and irreplaceable companions.",
-    tone: "gold",
-    image: "/images/han-sooyoung.jpg",
-  },
-  {
-    id: "yoo-sangah",
-    name: "Yoo Sangah",
-    title: "The Successor of Olympus",
-    modifier: "[Moonlight Empress]",
-    sponsor: "Olympus Nebula",
-    personalAttribute: "Interpreter (Rare)",
-    exclusiveSkills: "Interpretation, Hermes' Walking Method",
-    stigma: "Thread of Fate, Hermes' Walk",
-    stats: "STR: 45 | AGI: 75 | END: 50 | Mana: 80",
-    description: "Kim Dokja's former colleague from Mino Soft. She was considered a flawless 'perfect employee' before the apocalypse. To everyone's surprise, she adapts to the ruined world faster than anyone, utilizing her intelligence and language skills to navigate complex scenarios. She eventually walks the path of the Successor of Olympus, wielding the threads of fate.",
-    tone: "icy",
-    image: "/images/yoo-sangah.jpg",
-  },
-  {
-    id: "lee-hyunsung",
-    name: "Lee Hyunsung",
-    title: "The Steel Sword",
-    modifier: "[Master of Steel]",
-    sponsor: "Master of Steel",
-    personalAttribute: "Soldier (General)",
-    exclusiveSkills: "Bayonet Charge, Weapons Training",
-    stigma: "Great Mountain Smash",
-    stats: "STR: 90 | AGI: 40 | END: 95 | Mana: 20",
-    description: "A former army lieutenant whose unwavering loyalty and strong moral compass make him the 'Steel Sword' of the party. He struggles with the trauma of losing his former squad but finds a new purpose in protecting Kim Dokja's Company. He is the ultimate shield, repeatedly putting himself in harm's way for his comrades.",
-    tone: "icy",
-    image: "/images/lee-hyunsung.jpg",
-  },
-  {
-    id: "jung-heewon",
-    name: "Jung Heewon",
-    title: "The Sword of Judgment",
-    modifier: "[Judge of Fire]",
-    sponsor: "Demon-like Judge of Fire (Uriel)",
-    personalAttribute: "Crouching Figure (Rare), Judge of Destruction",
-    exclusiveSkills: "Kendo, Demon Slaying",
-    stigma: "Hellfire, Judgment Time",
-    stats: "STR: 85 | AGI: 80 | END: 70 | Mana: 60",
-    description: "A woman who suffered terrible injustices early in the scenarios before being saved by Kim Dokja. She awakens as the 'Sword of Judgment', wielding hellfire to incinerate evil. She becomes the absolute strongest physical combatant in the party next to Yoo Joonghyuk, known for her straightforward personality and zero tolerance for injustice.",
-    tone: "blood",
-    image: "/images/jung-heewon.jpg",
-  },
-  {
-    id: "lee-jihye",
-    name: "Lee Jihye",
-    title: "The Naval Commander",
-    modifier: "[Maritime War God's Incarnation]",
-    sponsor: "Maritime War God",
-    personalAttribute: "Scarred Sword Demon",
-    exclusiveSkills: "Sword Training, Ghost Walk",
-    stigma: "Ghost Fleet, Sword Training",
-    stats: "STR: 75 | AGI: 85 | END: 60 | Mana: 50",
-    description: "A fierce high school student and Yoo Joonghyuk's disciple. She carries the immense psychological burden of having killed her best friend to survive the very first scenario. Mentored by the Maritime War God, she commands ghost fleets and battleships. She acts tough and impulsive but deeply cares for her found family.",
-    tone: "icy",
-    image: "/images/lee-jihye.jpg",
-  },
-  {
-    id: "lee-gilyoung",
-    name: "Lee Gilyoung",
-    title: "The Insect Boy",
-    modifier: "[Ruler of Insects]",
-    sponsor: "Ruler of Insects",
-    personalAttribute: "Insect Collector",
-    exclusiveSkills: "Diverse Communication",
-    stigma: "Communication with Insects",
-    stats: "STR: 30 | AGI: 50 | END: 25 | Mana: 60",
-    description: "A young boy who lost his mother in the first scenario. Finding solace in insects rather than humans, he bonds with Kim Dokja, viewing him as a savior and father figure. He possesses terrifying potential through his connection to insect rulers and the Abyssal Black Flame Dragon, and will fiercely attack anyone who threatens Dokja.",
-    tone: "blood",
-    image: "/images/lee-gilyoung.jpg",
-  },
-  {
-    id: "shin-yoosung",
-    name: "Shin Yoosung",
-    title: "Beast Tamer",
-    modifier: "[Beast King's Incarnation]",
-    sponsor: "Demon King of Salvation",
-    personalAttribute: "Beast Tamer (Rare)",
-    exclusiveSkills: "Taming, Diverse Communication",
-    stigma: "Taming",
-    stats: "STR: 25 | AGI: 45 | END: 20 | Mana: 75",
-    description: "Kim Dokja's designated incarnation. Originally destined to become a catastrophic beast in the original novel, Dokja alters her fate and takes her under his wing. She possesses the rare ability to communicate with and tame monsters. Carrying a heavy destiny, she is deeply attached to her sponsor and grows into a remarkably mature survivor.",
-    tone: "gold",
-    image: "/images/shin-yoosung.jpg",
-  }
-];
+const displayFont = { fontFamily: "'Orbitron', sans-serif" };
+const serifFont = { fontFamily: "'Instrument Serif', Georgia, serif" };
+const uiFont = { fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" };
+const monoFont = { fontFamily: "'JetBrains Mono', monospace" };
 
 export default function CharactersPage() {
-  const [selectedChar, setSelectedChar] = useState<any>(null);
-  const [mounted, setMounted] = useState(false);
+  const [selectedChar, setSelectedChar] = useState<CharacterRecord | null>(null);
+  const [revealedModifiers, setRevealedModifiers] = useState<Record<string, boolean>>({});
+  const [imgError, setImgError] = useState<boolean>(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const modalCloseButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const openCharacterModal = (char: CharacterRecord, triggerEl: HTMLElement | null) => {
+    lastFocusedRef.current = triggerEl;
+    setImgError(false);
+    setSelectedChar(char);
+  };
+
+  const closeCharacterModal = () => {
+    setSelectedChar(null);
+    setTimeout(() => {
+      lastFocusedRef.current?.focus();
+    }, 50);
+  };
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (!selectedChar) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        closeCharacterModal();
+        return;
+      }
+      if (e.key === "Tab") {
+        if (!modalRef.current) return;
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    const timer = setTimeout(() => {
+      modalCloseButtonRef.current?.focus();
+    }, 50);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      clearTimeout(timer);
+    };
+  }, [selectedChar]);
 
   const getToneColor = (tone: string) => {
     if (tone === "blood") return COLORS.blood;
@@ -160,18 +94,22 @@ export default function CharactersPage() {
     return COLORS.icy;
   };
 
+  const toggleModifier = (id: string) => {
+    setRevealedModifiers((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
     <div className="min-h-screen pt-32 pb-24 px-6 sm:px-10 lg:px-16" style={{ background: COLORS.abyss }}>
-      <div className="max-w-7xl mx-auto">
+      <div aria-hidden={!!selectedChar} className="max-w-7xl mx-auto">
         <header className="mb-16">
           <p style={{ ...uiFont, color: COLORS.icy, letterSpacing: "0.2em" }} className="text-[10px] uppercase mb-4">
             [ System // Encyclopedia ]
           </p>
-          <h1 style={{ ...displayFont, color: "#eef2fb" }} className="text-4xl sm:text-5xl font-black mb-4">
+          <h1 style={{ ...serifFont, color: "#eef2fb" }} className="text-4xl sm:text-5xl md:text-6xl font-normal mb-4">
             Dramatis Personae
           </h1>
-          <p style={{ ...uiFont, color: "#5c6272" }} className="max-w-2xl text-sm leading-[1.8]">
-            The incarnations and readers who shape the Star Stream. Each character carries a story, a modifier, and the weight of the scenarios.
+          <p style={{ ...uiFont, color: "#cbd5e1" }} className="max-w-2xl text-sm leading-[1.8]">
+            The incarnations and readers who shape the Star Stream. Each character record strictly delineates inherent exclusive skills from sponsor stigmas, with spoiler protections for major late-story revelations.
           </p>
         </header>
 
@@ -181,9 +119,18 @@ export default function CharactersPage() {
             return (
               <motion.div
                 key={char.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`View dossier for ${char.name}, ${char.title}`}
                 whileHover={{ y: -5 }}
-                onClick={() => setSelectedChar(char)}
-                className="group cursor-pointer rounded-xl overflow-hidden relative"
+                onClick={(e) => openCharacterModal(char, e.currentTarget)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openCharacterModal(char, e.currentTarget);
+                  }
+                }}
+                className="group cursor-pointer rounded-xl overflow-hidden relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#82b1ff] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${color}22` }}
               >
                 <div className="aspect-[3/4] relative overflow-hidden bg-black/50">
@@ -193,11 +140,18 @@ export default function CharactersPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
+                  {char.modifierSpoiler && (
+                    <div className="absolute top-3 right-3 px-2 py-0.5 rounded bg-black/70 border border-amber-500/40 text-[9px] text-amber-300 font-mono flex items-center gap-1 backdrop-blur-sm">
+                      <AlertTriangle size={10} />
+                      Spoiler
+                    </div>
+                  )}
+
                   <div className="absolute bottom-0 left-0 right-0 p-5">
                     <p style={{ ...uiFont, color: color }} className="text-[10px] font-bold uppercase tracking-widest mb-1">
                       {char.title}
                     </p>
-                    <h3 style={{ ...displayFont, color: "#eef2fb" }} className="text-xl font-bold">
+                    <h3 style={{ ...serifFont, color: "#eef2fb" }} className="text-2xl font-normal">
                       {char.name}
                     </h3>
                   </div>
@@ -217,81 +171,263 @@ export default function CharactersPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setSelectedChar(null)}
+                onClick={closeCharacterModal}
                 className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm"
               />
               <motion.div
                 key="modal"
+                ref={modalRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="character-modal-title"
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-2xl"
+                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[calc(100%-2rem)] max-w-4xl"
               >
                 <div
-                  className="mx-4 overflow-y-auto max-h-[90vh] rounded-2xl relative"
-                  style={{ background: COLORS.abyss, border: `1px solid ${getToneColor(selectedChar.tone)}55`, boxShadow: `0 20px 40px -10px rgba(0,0,0,0.8)` }}
+                  className="overflow-hidden max-h-[90vh] md:h-[680px] md:max-h-[85vh] rounded-2xl relative flex flex-col md:flex-row shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)]"
+                  style={{
+                    background: COLORS.abyss,
+                    border: `1px solid ${getToneColor(selectedChar.tone)}55`,
+                  }}
                 >
                   <button
-                    onClick={() => setSelectedChar(null)}
-                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+                    ref={modalCloseButtonRef}
+                    type="button"
+                    onClick={closeCharacterModal}
+                    aria-label={`Close dossier for ${selectedChar.name}`}
+                    className="absolute top-3 right-3 sm:top-4 sm:right-4 z-30 p-2 rounded-full bg-black/60 hover:bg-white/10 transition-colors text-slate-400 hover:text-white border border-white/10 backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#82b1ff]"
                   >
                     <X size={20} />
                   </button>
 
-                  <div className="flex flex-col md:flex-row">
-                    <div className="w-full md:w-2/5 h-48 sm:h-64 md:h-auto relative bg-black/50 shrink-0">
-                      <div
-                        className="absolute inset-0 bg-cover bg-center"
-                        style={{ backgroundImage: `url(${selectedChar.image})` }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/80 to-transparent mix-blend-overlay" />
+                  {/* Left Column: Character Portrait Showcase */}
+                  <div className="w-full md:w-[42%] lg:w-[40%] h-72 sm:h-80 md:h-full relative bg-[#020409] shrink-0 overflow-hidden flex items-center justify-center border-b md:border-b-0 md:border-r border-white/10">
+                    {/* Layer 1: Ambient Blurred Backdrop */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 bg-cover bg-center opacity-30 filter blur-2xl scale-125 pointer-events-none transition-all duration-700"
+                      style={{ backgroundImage: `url(${selectedChar.image})` }}
+                    />
+
+                    {/* Layer 2: True Character Portrait or Offline Fallback */}
+                    {imgError ? (
+                      <div className="flex flex-col items-center justify-center p-6 text-center text-slate-400 z-10 relative">
+                        <AlertTriangle size={36} className="text-amber-400/80 mb-2" />
+                        <p style={monoFont} className="text-[11px] uppercase tracking-wider text-slate-300 mb-1">
+                          [ Visual Feed Offline ]
+                        </p>
+                        <p style={uiFont} className="text-[10px] text-slate-500 max-w-[200px]">
+                          Probability density too high for remote optical feed reconstruction.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="relative w-full h-full flex items-center justify-center z-10 p-3 sm:p-5">
+                        <Image
+                          src={selectedChar.image}
+                          alt={selectedChar.name}
+                          fill
+                          priority
+                          sizes="(max-width: 768px) 100vw, 420px"
+                          className="object-contain select-none drop-shadow-[0_12px_28px_rgba(0,0,0,0.9)]"
+                          onError={() => setImgError(true)}
+                        />
+                      </div>
+                    )}
+
+                    {/* Layer 3: Directional Edge Vignettes */}
+                    <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-transparent via-transparent to-[#05070d]/90 pointer-events-none z-10" />
+
+                    {/* Layer 4: Star Stream Visual Feed Badge */}
+                    <div className="absolute bottom-3 left-3 z-20 px-2.5 py-1 rounded-md bg-black/75 border border-white/10 text-[9px] font-mono tracking-widest uppercase flex items-center gap-1.5 backdrop-blur-md">
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getToneColor(selectedChar.tone) }} />
+                      <span className="text-slate-300">[ Visual Feed · Verified ]</span>
                     </div>
-                    <div className="w-full md:w-3/5 p-6 md:p-8">
-                      <p style={{ ...uiFont, color: getToneColor(selectedChar.tone) }} className="text-[10px] uppercase font-bold tracking-widest mb-2">
+                  </div>
+
+                  {/* Right Column: Independent Scroll Information Panel */}
+                  <div className="w-full md:w-[58%] lg:w-[60%] p-6 sm:p-8 overflow-y-auto max-h-[85vh] md:max-h-full custom-scrollbar">
+                      <p style={{ ...uiFont, color: getToneColor(selectedChar.tone) }} className="text-[10px] uppercase font-bold tracking-widest mb-1">
                         [ {selectedChar.title} ]
                       </p>
-                      <h2 style={{ ...displayFont, color: "#eef2fb" }} className="text-3xl font-black mb-1">
+                      <h2 id="character-modal-title" style={{ ...serifFont, color: "#eef2fb" }} className="text-3xl sm:text-4xl font-normal mb-1">
                         {selectedChar.name}
                       </h2>
-                      <p style={{ ...uiFont, color: COLORS.dim }} className="text-xs mb-6 font-medium italic">
-                        Modifier: {selectedChar.modifier}
-                      </p>
+
+                      {/* Modifier with spoiler reveal if applicable */}
+                      <div className="mb-5 flex items-center gap-2 flex-wrap">
+                        <span style={{ ...uiFont, color: "#94a3b8" }} className="text-xs font-semibold">Modifier:</span>
+                        {selectedChar.modifierSpoiler && !revealedModifiers[selectedChar.id] ? (
+                          <button
+                            type="button"
+                            onClick={() => toggleModifier(selectedChar.id)}
+                            className="text-[11px] px-2.5 py-0.5 rounded border border-amber-500/40 text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 transition-colors cursor-pointer flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                          >
+                            <AlertTriangle size={12} />
+                            Demon Realm Spoiler — Click to Reveal
+                          </button>
+                        ) : (
+                          <span style={{ ...uiFont, color: getToneColor(selectedChar.tone) }} className="text-xs font-semibold">
+                            {selectedChar.modifier}
+                          </span>
+                        )}
+                      </div>
 
                       <div className="space-y-4 mb-6">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Sponsor</p>
+                            <p style={{ ...uiFont, color: "#94a3b8" }} className="text-[10px] uppercase tracking-wide mb-1 font-semibold">Sponsor</p>
                             <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium">{selectedChar.sponsor}</p>
                           </div>
                           <div>
-                            <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Attribute</p>
+                            <p style={{ ...uiFont, color: "#94a3b8" }} className="text-[10px] uppercase tracking-wide mb-1 font-semibold">Personal Attribute</p>
                             <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium">{selectedChar.personalAttribute}</p>
                           </div>
                         </div>
-                        
+
+                        {selectedChar.sponsorNotes && (
+                          <p className="text-[10px] text-cyan-300/80 italic font-mono bg-cyan-500/5 p-2 rounded border border-cyan-500/20">
+                            ℹ️ {selectedChar.sponsorNotes}
+                          </p>
+                        )}
+
+                        {/* Exclusive Skills */}
                         <div>
-                          <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Exclusive Skills</p>
-                          <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium leading-relaxed">{selectedChar.exclusiveSkills}</p>
+                          <p style={{ ...uiFont, color: "#94a3b8" }} className="text-[10px] uppercase tracking-wide mb-1.5 flex items-center justify-between font-semibold">
+                            <span>Exclusive Skills</span>
+                            <span className="text-[9px] text-cyan-400/80 font-mono">Inherent Abilities</span>
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {selectedChar.exclusiveSkills.map((skill, idx) => (
+                              <span
+                                key={idx}
+                                className="text-xs px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-200"
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 pt-3 border-t border-white/5">
+                        {/* General Skills */}
+                        {selectedChar.generalSkills && selectedChar.generalSkills.length > 0 && (
                           <div>
-                            <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Stigma</p>
-                            <p style={{ ...uiFont, color: "#eef2fb" }} className="text-xs font-medium">{selectedChar.stigma}</p>
+                            <p style={{ ...uiFont, color: "#94a3b8" }} className="text-[10px] uppercase tracking-wide mb-1.5 flex items-center justify-between font-semibold">
+                              <span>General Skills</span>
+                              <span className="text-[9px] text-slate-300 font-mono">Acquired Talents</span>
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {selectedChar.generalSkills.map((skill, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-200"
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
                           </div>
+                        )}
+
+                        {/* Stigmas */}
+                        <div>
+                          <p style={{ ...uiFont, color: "#94a3b8" }} className="text-[10px] uppercase tracking-wide mb-1.5 flex items-center justify-between font-semibold">
+                            <span>Sponsor Stigmas</span>
+                            <span className="text-[9px] text-amber-400/80 font-mono">Constellation Bestowed</span>
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {selectedChar.stigmas.map((stigma, idx) => (
+                              <span
+                                key={idx}
+                                className="text-xs px-2 py-0.5 rounded bg-amber-500/5 border border-amber-500/20 text-amber-200/90"
+                              >
+                                {stigma}
+                              </span>
+                            ))}
+                          </div>
+                          {selectedChar.stigmaNotes && (
+                            <p className="mt-2 text-[10px] text-amber-300/80 italic font-mono bg-amber-500/5 p-2 rounded border border-amber-500/20">
+                              ℹ️ {selectedChar.stigmaNotes}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Stories / Fables */}
+                        {selectedChar.stories && selectedChar.stories.length > 0 && (
                           <div>
-                            <p style={{ ...uiFont, color: "#5c6272" }} className="text-[10px] uppercase tracking-wide mb-1">Overall Stats</p>
-                            <p style={{ ...uiFont, color: getToneColor(selectedChar.tone) }} className="text-xs font-bold font-mono tracking-tight">{selectedChar.stats}</p>
+                            <p style={{ ...uiFont, color: "#94a3b8" }} className="text-[10px] uppercase tracking-wide mb-1.5 flex items-center justify-between font-semibold">
+                              <span>Stories / Fables (설화)</span>
+                              <span className="text-[9px] text-purple-400/80 font-mono">Narrative Feats</span>
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {selectedChar.stories.map((story, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-200"
+                                >
+                                  {story}
+                                </span>
+                              ))}
+                            </div>
+                            {selectedChar.storyNotes && (
+                              <p className="mt-2 text-[10px] text-purple-300/80 italic font-mono bg-purple-500/5 p-2 rounded border border-purple-500/20">
+                                ℹ️ {selectedChar.storyNotes}
+                              </p>
+                            )}
                           </div>
+                        )}
+
+                        {/* Stats */}
+                        <div className="pt-3 border-t border-white/5">
+                          <p style={{ ...uiFont, color: "#94a3b8" }} className="text-[10px] uppercase tracking-wide mb-1 font-semibold">Overall Stats</p>
+                          <p style={{ ...uiFont, color: getToneColor(selectedChar.tone) }} className="text-xs font-bold font-mono tracking-tight">
+                            STR: {selectedChar.stats.str} | AGI: {selectedChar.stats.agi} | END: {selectedChar.stats.end} | Mana: {selectedChar.stats.mana}
+                          </p>
                         </div>
                       </div>
 
-                      <p style={{ ...uiFont, color: "#8a93a8" }} className="text-sm leading-[1.8]">
+                      <p style={{ ...uiFont, color: "#cbd5e1" }} className="text-sm leading-[1.8] mb-6">
                         {selectedChar.description}
                       </p>
+
+                      {/* Canon Distinctions & Anti-Conflation Notes */}
+                      {selectedChar.canonDistinctions && selectedChar.canonDistinctions.length > 0 && (
+                        <div className="mb-6 p-3 rounded-lg bg-blue-950/20 border border-blue-500/20 space-y-1.5">
+                          <p className="text-[10px] uppercase tracking-wider text-blue-400 font-mono font-bold">
+                            Canon Distinctions &amp; Anti-Conflation:
+                          </p>
+                          {selectedChar.canonDistinctions.map((d, idx) => (
+                            <p key={idx} className="text-[11px] text-slate-300/90 leading-relaxed font-mono">
+                              • <strong className="text-sky-300">{d.entity}:</strong> {d.distinction}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Canon Status and Citation */}
+                      <div className="pt-4 border-t border-white/5 flex flex-col gap-2 text-[11px]">
+                        {selectedChar.canonStatus === "needs_verification" ? (
+                          <div className="flex items-center gap-1.5 text-amber-400 font-mono">
+                            <AlertTriangle size={13} />
+                            <span className="font-semibold uppercase tracking-wider text-[10px]">Verification In Progress:</span>
+                            <span className="text-slate-300 text-[11px]">{selectedChar.chapterCitation}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-emerald-400 font-mono">
+                            <ShieldCheck size={13} />
+                            <span className="font-semibold uppercase tracking-wider text-[10px]">Canon Verified:</span>
+                            <span className="text-slate-300 text-[11px]">{selectedChar.chapterCitation}</span>
+                          </div>
+                        )}
+                        {selectedChar.imageAttribution && (
+                          <p className="text-[10px] text-slate-400">
+                            Art by {selectedChar.imageAttribution.illustrator} {"//"} {selectedChar.imageAttribution.source} (Unofficial fan reference; does not establish copyright permission)
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
               </motion.div>
             </>
           )}
